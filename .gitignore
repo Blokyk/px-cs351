@@ -1,3 +1,9 @@
 *.o
 *.bin
 *.hex
+
+riscv-assembler
+riscv-emulator
+*.old
+.vscode
+__pycache__
