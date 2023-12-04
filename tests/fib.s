@@ -10,15 +10,26 @@
 
 # fib(a0:dw = n) -> a0:dw
     # Setup a0, a1, result and i
-    addi x1, zero, 1
-    addi x2, zero, 0x0
-    addi x3, zero, 0 # todo: 0b00000
-    addi x4, zero, 1
+    addi t0, zero, 1   # fib(n-1)
+    addi t1, zero, 0x0 # fib(n-2)
+    addi t2, zero, 0   # res # todo: 0b00000 format
+    addi t3, zero, 1   # i
     # FOR:
-        add x3, x1, x2
-        add x2, x0, x1
-        add x1, x0, x3
-        addi x4, x4, 1
-        blt x4, x5, -16
+        add t2, t0, t1
+        add t1, x0, t0
+        add t0, x0, t2
+        addi t3, t3, 1
+        blt t3, a0, -16 # fixme: blt decoding not working
+    addi a0, t2, 0
+    # ret ???
     # HALT:
         # jal x0, 0
+
+# EXPECTED
+# sp: 0x4000
+# ra: 8
+# a0: 8
+# t0: -
+# t1: -
+# t2: 8
+# t3: 6

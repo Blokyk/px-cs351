@@ -1,6 +1,7 @@
 *.o
 *.bin
 *.hex
+*.state
 
 riscv-assembler
 riscv-emulator

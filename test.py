@@ -98,7 +98,11 @@ def parse_final_state(s):
             regnum = riscv_regs.index(reg)
         else:
             pytest.fail("Unknown register '{}' in output".format(reg))
-        state[regnum] = int(value.strip(), 0)
+        value = value.strip()
+        if value == "-":
+            state[regnum] = "-"
+        else:
+            state[regnum] = int(value.strip(), 0)
     return state
 
 
@@ -131,6 +135,8 @@ def assert_equal_regs(ref, out):
     failed = False
 
     for r in range(32):
+        if ref.get(r, 0) == "-":
+            continue
         if ref.get(r, 0) != out.get(r, 0):
             msg += "\n- x{} ({}) should be {}, but it is {}".format(
                 r, riscv_regs[r], ref.get(r, 0), out.get(r, 0)
@@ -158,10 +164,10 @@ def convert_gcc_syntax(input, output):
 
 
 class TestRISCVAssembler:
-    def get_reference(self, file):
+    def get_reference(self, file, tmp_path):
         prog = os.path.splitext(file)[0]
-        prog_obj = prog + ".o"
-        prog_bin = prog + ".bin"
+        prog_obj = os.path.join(tmp_path, "tmp.o")
+        prog_bin = os.path.join(tmp_path, "tmp.bin")
 
         if RV64_GCC is not None:
             file_gcc = file[:-2] + ".s.gnu"
@@ -195,10 +201,10 @@ class TestRISCVAssembler:
         return struct.unpack("<{}I".format(len(data) // 4), data)
 
     @pytest.mark.parametrize("filename", ALL_FILES)
-    def test_assembler(self, filename):
+    def test_assembler(self, filename, tmp_path):
         prog = os.path.splitext(filename)[0]
         prog_hex = prog + ".hex"
-        reference = self.get_reference(filename)
+        reference = self.get_reference(filename, tmp_path)
 
         if os.path.exists(prog_hex):
             os.remove(prog_hex)
