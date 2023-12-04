@@ -16,12 +16,13 @@ TEST_DIR = os.environ.get("TEST_FILES", os.path.join(BASE_DIR, "tests/*.s"))
 if "TEST_FILES" in os.environ:
     ALL_FILES = glob.glob(os.environ["TEST_FILES"], recursive=True)
 else:
-    ALL_FILES = glob.glob(
-        os.path.join(BASE_DIR, "tests/**/*.s"), recursive=True)
+    ALL_FILES = glob.glob(os.path.join(BASE_DIR, "tests/**/*.s"), recursive=True)
+
 
 # Find the first program in PATH from the provided list
 def find_program(options):
     return next((o for o in options if shutil.which(o) is not None), None)
+
 
 # Some people have no global name for LLVM toolchains. Feel free to add to the
 # end of the lists to match your setup.
@@ -36,17 +37,48 @@ if (CLANG is None and RV64_GCC is None) or OBJCOPY is None:
     print("- gcc:", RV64_GCC)
     sys.exit(1)
 
+
 # Split into non-empty lines, remove spaces, translate to lower case
 def normalize_and_split_lines(s):
     s = [re.sub(r"[ \t\n]+", "", line.lower()) for line in s.split("\n")]
     return [line for line in s if line]
 
+
 riscv_regs = [
-    "zero", "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
-    "s0",   "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
-    "a6",   "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
-    "s8",   "s9", "s10", "s11", "t3", "t4", "t5", "t6",
+    "zero",
+    "ra",
+    "sp",
+    "gp",
+    "tp",
+    "t0",
+    "t1",
+    "t2",
+    "s0",
+    "s1",
+    "a0",
+    "a1",
+    "a2",
+    "a3",
+    "a4",
+    "a5",
+    "a6",
+    "a7",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "t3",
+    "t4",
+    "t5",
+    "t6",
 ]
+
 
 # Parse string into a final state dictionary
 def parse_final_state(s):
@@ -69,18 +101,31 @@ def parse_final_state(s):
         state[regnum] = int(value.strip(), 0)
     return state
 
+
 def assert_equal_hex(ref, out):
     if len(out) != len(ref):
-        pytest.fail("Output should contain {} instructions, but has {}"
-                    .format(len(ref), len(out)))
+        pytest.fail(
+            "Output should contain {} instructions, but has {}".format(
+                len(ref), len(out)
+            )
+        )
     for i in range(len(ref)):
         if out[i] != ref[i]:
-            pytest.fail("Instruction #{} should be {:08x}, but is {:08x}"
-                        .format(i+1, ref[i], out[i]))
+            pytest.fail(
+                "Instruction #{} should be {:08x}, but is {:08x}".format(
+                    i + 1, ref[i], out[i]
+                )
+            )
+
 
 def assert_equal_regs(ref, out):
     ref = parse_final_state(ref)
     out = parse_final_state(out)
+
+    print("ref:", end="\n\t")
+    print(ref)
+    print("out:", end="\n\t")
+    print(out)
 
     msg = ""
     failed = False
@@ -88,17 +133,20 @@ def assert_equal_regs(ref, out):
     for r in range(32):
         if ref.get(r, 0) != out.get(r, 0):
             msg += "\n- x{} ({}) should be {}, but it is {}".format(
-                r, riscv_regs[r], ref.get(r, 0), out.get(r, 0))
+                r, riscv_regs[r], ref.get(r, 0), out.get(r, 0)
+            )
             failed = True
 
     if failed:
         pytest.fail(msg)
 
+
 def convert_gcc_syntax(input, output):
     with open(input, "r") as fp:
         asm = fp.read()
 
-    RE_JUMP = re.compile(r'\b(j|jal|beq|bne|blt|bge)\b\s*([^\n]+)', re.I)
+    RE_JUMP = re.compile(r"\b(j|jal|beq|bne|blt|bge)\b\s*([^\n]+)", re.I)
+
     def rep(m):
         args = m[2].split(",")
         args = args[:-1] + ["(.+ " + args[-1] + ")"]
@@ -107,6 +155,7 @@ def convert_gcc_syntax(input, output):
     asm = RE_JUMP.sub(rep, asm)
     with open(output, "w") as fp:
         fp.write(asm)
+
 
 class TestRISCVAssembler:
     def get_reference(self, file):
@@ -118,18 +167,27 @@ class TestRISCVAssembler:
             file_gcc = file[:-2] + ".s.gnu"
             convert_gcc_syntax(file, file_gcc)
             subprocess.run(
-                [RV64_GCC, "-march=rv64i", "-mabi=lp64", "-x", "assembler",
-                 "-c", file_gcc, "-o", prog_obj],
-                check=True)
+                [
+                    RV64_GCC,
+                    "-march=rv64i",
+                    "-mabi=lp64",
+                    "-x",
+                    "assembler",
+                    "-c",
+                    file_gcc,
+                    "-o",
+                    prog_obj,
+                ],
+                check=True,
+            )
         else:
             subprocess.run(
-                [CLANG, "--target=riscv64", "-march=rv64g", "-c", file, "-o",
-                prog_obj],
-                check=True)
+                [CLANG, "--target=riscv64", "-march=rv64g", "-c", file, "-o", prog_obj],
+                check=True,
+            )
         subprocess.run(
-            [OBJCOPY, "-O", "binary", "-j", ".text", prog_obj,
-             prog_bin],
-            check=True)
+            [OBJCOPY, "-O", "binary", "-j", ".text", prog_obj, prog_bin], check=True
+        )
 
         with open(prog_bin, "rb") as fp:
             data = fp.read()
@@ -148,7 +206,10 @@ class TestRISCVAssembler:
         # Run the command, ignoring I/Os (we only use output files)
         subprocess.run(
             [RISCV_ASSEMBLER, filename, prog_hex],
-            timeout=10, stderr=subprocess.STDOUT, check=True)
+            timeout=10,
+            stderr=subprocess.STDOUT,
+            check=True,
+        )
 
         produced = []
         with open(prog_hex, "r") as fp:
@@ -159,6 +220,7 @@ class TestRISCVAssembler:
                     pass
 
         assert_equal_hex(reference, produced)
+
 
 class TestRISCVEmulation:
     def get_expected(self, file):
@@ -200,7 +262,10 @@ class TestRISCVEmulation:
         # Run the command, ignoring I/Os (we only use output files)
         subprocess.run(
             [RISCV_EMULATOR, prog_hex, prog_state],
-            timeout=10, stderr=subprocess.STDOUT, check=True)
+            timeout=10,
+            stderr=subprocess.STDOUT,
+            check=True,
+        )
 
         if expected is None:
             pytest.skip("no EXPECTED block in test file")
@@ -211,5 +276,6 @@ class TestRISCVEmulation:
         if state == "":
             pytest.skip(".state file empty")
         assert_equal_regs(expected, state)
+
 
 pytest.main(sys.argv)

@@ -1,6 +1,6 @@
 # Projet RISC-V CS351
 
-Auteurs : Émilie BOULART & Zoë COURVOISIER
+Auteurs : Zoë COURVOISIER
 
 ## Rendu 1
 
@@ -49,7 +49,7 @@ Questions à remplir _avant_ de programmer l'émulateur (10 lignes sont conseill
 
 * Quelle fonction de la bibliothèque standard pouvez-vous utiliser pour lire les valeurs listées dans le fichier `.hex` sans vous casser la tête ? (Indice : ces valeurs ont été écrites avec `fprintf()`.)
 
-[COMPLÉTER ICI]
+getline + fscanf
 
 * Décrivez comment vous allez répartir les tâches de l'émulateur en différents fichiers, ou ne pas les répartir et tout faire dans le même fichier. Expliquez les avantages de votre choix.
 
