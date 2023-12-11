@@ -30,14 +30,23 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    uint32_t *memory = malloc(0x4000);
-    bzero(memory, 0x4000);
+    size_t mem_size = 0x4000;
+    uint32_t *memory = malloc(mem_size);
+    bzero(memory, mem_size);
 
     int i = 0;
-    while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) != EOF)
+    while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) != EOF) {
         i++;
 
-    cpu_t cpu = init_cpu((uint8_t*)memory, 0x4000);
+        // check after increment because scanf writes directly based on `i` during the loop's check
+        if (i == mem_size) {
+            mem_size *= 2;
+            memory = realloc(memory, mem_size);
+            bzero(memory+mem_size/2, mem_size/2);
+        }
+    }
+
+    cpu_t cpu = init_cpu((uint8_t*)memory, mem_size);
 
     while (cpu.pc != ERROR_PC) {
         step(&cpu);
