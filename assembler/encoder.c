@@ -16,6 +16,7 @@ uint32_t encode(instr_t instr) {
             regnum_t rd = instr.as_reg.rd;
             regnum_t rs1 = instr.as_reg.rs1;
             regnum_t rs2 = instr.as_reg.rs2;
+
             return (uint32_t)(opcode
                 | (rd << 7)
                 | (f3 << 12)
@@ -29,6 +30,7 @@ uint32_t encode(instr_t instr) {
             regnum_t rd = instr.as_imm.rd;
             regnum_t rs = instr.as_imm.rs;
             uint32_t operand = instr.as_imm.operand;
+
             return (uint32_t)(opcode
                 | (rd << 7)
                 | (f3 << 12)
@@ -50,7 +52,7 @@ uint32_t encode(instr_t instr) {
                 | (f3 << 12)
                 | (rbase << 15)
                 | (rval << 20)
-                | (hi << 20)
+                | (hi << 25)
             );
         }
         case BRANCH: {
@@ -85,6 +87,7 @@ uint32_t encode(instr_t instr) {
             uint32_t b11 = (offset    & 0b000000000100000000000) >> 11;
             uint32_t b10_1 = (offset  & 0b000000000011111111110) >> 1;
             uint32_t b20 = (offset    & 0b100000000000000000000) >> 20;
+
             return (uint32_t)(opcode
                 | (rd << 7)
                 | (b19_12 << 12)

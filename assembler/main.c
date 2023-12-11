@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     size_t _;
     ssize_t n;
     while ((n = getline(&line, &_, asm_input_file)) != -1) {
+        // getline also includes the '\n'
         if (!feof(asm_input_file)) {
             // remove ending '\n'
             n--;
