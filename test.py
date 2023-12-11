@@ -28,7 +28,8 @@ def find_program(options):
 # end of the lists to match your setup.
 CLANG = find_program(["clang", "clang-14"])
 OBJCOPY = find_program(["llvm-objcopy", "llvm-objcopy-14", "riscv64-elf-objcopy"])
-RV64_GCC = find_program(["riscv64-elf-gcc"])
+# the `convert_gcc_syntax` function doesn't like my code it seems :/ so i'm disabling gcc compilation
+RV64_GCC = None  # find_program(["riscv64-elf-gcc", "riscv64-unknown-elf-gcc"])
 
 if (CLANG is None and RV64_GCC is None) or OBJCOPY is None:
     print("error: missing tools!")
