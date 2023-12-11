@@ -11,9 +11,6 @@
 
 #include "span.h"
 
-#define fits_in_n_bits(l, n) (l < (1 << n) && l > -((1 << (n-1)) + 1))
-#define trim_comma_and_space() do { trim_left(&src_code, ' '); trim_left(&src_code, ','); trim_left(&src_code, ' '); } while(0)
-
 void trim_left(span_t *span, char ignored_char) {
     const char *str = span->str;
     size_t length = span->length;
@@ -32,6 +29,12 @@ void trim_left(span_t *span, char ignored_char) {
     span->length = length - i;
 }
 
+void trim_comma_and_space(span_t *span) {
+    trim_left(span, ' ');
+    trim_left(span, ',');
+    trim_left(span, ' ');
+}
+
 void cleanup_line_start(span_t *span) {
     while (span->length != 0 && isspace(span->str[0])) {
         span->str++; span->length--;
@@ -45,33 +48,36 @@ void cleanup_line_start(span_t *span) {
 bool check_line_ending(span_t *span) {
     // check that the rest of the line is either empty or whitespace
     trim_left(span, ' ');
-    if (span->length != 0) {
-        if (span->str[0] == '#')
-            return true;
 
-        char* line_str = as_string(span);
-        fprintf(stderr, "\x1b[31mExpected a newline or end-of-file, but got '%s' instead!\x1b[0m\n", line_str);
-        free(line_str);
-        return false;
-    }
-    return true;
+    if (span->length == 0)
+        return true;
+    if (span->str[0] == '#')
+        return true;
+    if (span->str[0] == '\n')
+        return true;
+
+    as_tmp_string(*span,
+        fprintf(stderr, "\x1b[31mExpected a newline or end-of-file, but got '%s' instead!\x1b[0m\n", span->str)
+    );
+    return false;
 }
 
+// word: ([0-9A-Za-z]|-|_|.)+
 // ! mutates span directly !
 span_t eat_next_word(span_t *span) {
     size_t i = 0;
-    while (i < span->length && !isspace(span->str[i]) && span->str[i] != ',' && span->str[i] != '#') i++;
+    while (i < span->length && (isalnum(span->str[i]) || span->str[i] == '-' || span->str[i] == '_' || span->str[i] == '.')) i++;
 
     if (i == 0) {
-        char *word_str = as_string(span);
-        if (word_str[0] == '\0')
+        if (span->length == 0) {
             fprintf(stderr, "\x1b[31mUnexpected end-of-file, expected a name or number!\x1b[0m\n");
-        else
-            fprintf(stderr, "\x1b[31mExpected a name or number, but got '%s' instead!\x1b[0m\n", word_str);
-        free(word_str);
+        } else {
+            as_tmp_string(*span,
+                fprintf(stderr, "\x1b[31mExpected a name or number, but got '%s' instead!\x1b[0m\n", span->str)
+            );
+        }
         exit(1);
     }
-
 
     span_t word;
     split(span, i, &word, span);
@@ -81,79 +87,64 @@ span_t eat_next_word(span_t *span) {
 opname_t parse_op_name(span_t span) {
     // this will just sequentially compare each instr name with the span content
 
-    #define min(a, b) (a < b ? a : b)
+    #define P_INSTR(name, _0, _1, _2) INSTR(,name,,,,)
     #define INSTR(_0, name, _1, _2, _3, _4)\
-        if (strncasecmp(#name, span.str, span.length /* #name will be null-terminated so it's fine */) == 0)\
-            return _opname_of(name);\
+        if ((span.length == sizeof(#name)-1) && strncasecmp(#name, span.str, span.length) == 0)\
+            return _opname_of(name);
 
-        X_INSTRS
+        X_ALL_INSTRS
     #undef INSTR
+    #undef P_INSTR
 
-    char *name_str = as_string(&span);
-    fprintf(stderr, "\x1b[31mCouldn't understand mnemonic '%s'\x1b[0m\n", name_str);
-    free(name_str);
+    as_tmp_string(span,
+        fprintf(stderr, "\x1b[31mCouldn't understand mnemonic '%s'\x1b[0m\n", span.str);
+    );
+
     return op_err;
 }
 
 bool try_parse_num(span_t span, int32_t *res) {
-    // technically, we shouldn't be reading or writing anything
-    // beyond `span.str[length-1]`, since it is theoretically
-    // possible to create a span_t over any arbitrary piece of
-    // memory, as we could be writing into memory concurrently
-    // used by another app, thus completely corrupting its state;
-    //
-    // however, in practice, `span_t`s are always created over
-    // NULL-terminated strings here, which means that they always
-    // have at least one controlled character at `span.str[length]`
-    // that's controlled by us, which means if we corrupt anything
-    // it'll be ours; and since we don't do any threaded parsing, we
-    // don't have to worry about corrupting state outside, as long as
-    // we fix anything we break before the function returns (or we
-    // exit before any other function looks at the span)
-    //
-    // anyway, we abuse that fact here to temporarily make this span
-    // into a c-string, by replacing `span.str[length]` with '\0'
-    // (and switching it back later obviously), so that we can call
-    // sscanf directly, which will take care of sign, base, etc
-
-    char old_terminator = ((char*)span.str)[span.length];
-    ((char*)span.str)[span.length] = '\0';
+    // todo: implement 0b base specifier
 
     int chars_read;
-    int scanf_res = sscanf(span.str, "%i%n", res, &chars_read);
+    int scanf_res;
 
-    ((char*)span.str)[span.length] = old_terminator;
+    as_tmp_string(span,
+        scanf_res = sscanf(span.str, "%i%n", res, &chars_read)
+    );
 
-    if (scanf_res == EOF || (size_t)chars_read != span.length)
-        // todo: implement 0b base specifier
-        goto INVALID_IMM_VALUE;
-    else
+    // scanf might read a value that overflows, so check it didn't read more
+    // than log10(2^32) = 10 (+1 for sign char)
+    // fixme: fix scanf overflow (e.g. by using strtol or custom solution)
+    if (chars_read > 11)
+        goto INVALID_NUM;
+
+    // scanf should do exactly 1 conversion
+    if (scanf_res == 1 && (size_t)chars_read == span.length)
         return true;
 
-INVALID_IMM_VALUE: {
-        char *num_str = as_string(&span);
-        fprintf(stderr, "\x1b[31m'%s' is not a valid number!\x1b[0m\n", num_str);
-        free(num_str);
-        return false;
-    }
+INVALID_NUM:
+    as_tmp_string(span,
+        fprintf(stderr, "\x1b[31m'%s' is not a valid number!\x1b[0m\n", span.str)
+    );
+    return false;
 }
 
-bool try_parse_imm(span_t span, uint8_t bits, int32_t *imm) {
-    if (!try_parse_num(eat_next_word(&span), imm))
+bool try_parse_imm(span_t *src_code, int32_t *imm) {
+    trim_comma_and_space(src_code);
+    if (!try_parse_num(eat_next_word(src_code), imm))
         return false;
-
-    if (!fits_in_n_bits(*imm, bits)) {
-        fprintf(stderr, "\x1b[31mValue '%d' cannot be used an operand here, because it doesn't fit in %d bits\x1b[0m\n", *imm, bits);
-        return false;
-    }
 
     return true;
 }
 
-bool try_parse_reg(span_t span, regnum_t *reg) {
-    if (2 > span.length || span.length > 3) {
+bool try_parse_reg(span_t *src_code, regnum_t *reg) {
+    trim_comma_and_space(src_code);
+    span_t regname_span = eat_next_word(src_code);
+
+    if (2 > regname_span.length || regname_span.length > 3) {
         // only valid register name of length 4
-        if (span.length == 4 && strncasecmp("zero", span.str, 4) == 0) {
+        if (regname_span.length == 4 && strncasecmp("zero", regname_span.str, 4) == 0) {
             *reg = 0;
             return true;
         }
@@ -171,16 +162,16 @@ bool try_parse_reg(span_t span, regnum_t *reg) {
     // part of the name and then map them to absolute
     // indices (i.e. the x0-x31 numbers)
 
-    char reg_type = tolower(span.str[0]);
+    char reg_type = tolower(regname_span.str[0]);
 
-    if (!isdigit(span.str[1])) {
-        if (tolower(span.str[1]) == 'p') {
+    if (!isdigit(regname_span.str[1])) {
+        if (tolower(regname_span.str[1]) == 'p') {
             switch (reg_type) {
                 case 's': *reg = 2; return true;
                 case 'g': *reg = 3; return true;
                 case 't': *reg = 4; return true;
             }
-        } else if (tolower(span.str[1]) == 'a') {
+        } else if (tolower(regname_span.str[1]) == 'a') {
             if (reg_type == 'r') {
                 *reg = 1;
                 return true;
@@ -192,9 +183,10 @@ bool try_parse_reg(span_t span, regnum_t *reg) {
 
     int32_t pretty_idx;
 
-    if (!try_parse_num(slice_by_start(&span, 1), &pretty_idx))
+    if (!try_parse_num(slice_by_start(&regname_span, 1), &pretty_idx))
         return false;
 
+    // parse_num can parse *any* number, including negative ones
     if (pretty_idx < 0)
         goto INVALID_REG_NAME;
 
@@ -226,15 +218,15 @@ bool try_parse_reg(span_t span, regnum_t *reg) {
     return true;
 
 INVALID_REG_NAME: {
-        char *reg_str = as_string(&span);
-        fprintf(stderr, "\x1b[31m'%s' is not a valid register name!\x1b[0m\n", reg_str);
-        free(reg_str);
+        as_tmp_string(regname_span,
+            fprintf(stderr, "\x1b[31m'%s' is not a valid register name!\x1b[0m\n", regname_span.str)
+        );
         return false;
     }
 }
 
-bool try_parse_offset_and_reg(span_t *src_code, uint8_t bits, int32_t *offset, regnum_t* reg) {
-    if (!try_parse_imm(eat_next_word(src_code), bits, offset))
+bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) {
+    if (!try_parse_imm(src_code, offset))
         return false;
 
     trim_left(src_code, ' ');
@@ -245,9 +237,16 @@ bool try_parse_offset_and_reg(span_t *src_code, uint8_t bits, int32_t *offset, r
     }
 
     *src_code = slice_by_start(src_code, 1); // eat the '('
+
     trim_left(src_code, ' ');
 
-    if (!try_parse_reg(eat_next_word(src_code), reg))
+    // since try_parse_reg ignores commas as well, we need to guard against it ourselves
+    if (src_code->str[0] == ',') {
+        fprintf(stderr, "Unexpected ',' character in `imm(reg)` syntax, expected a register name\n!");
+        return false;
+    }
+
+    if (!try_parse_reg(src_code, reg))
         return false;
 
     trim_left(src_code, ' ');
@@ -259,6 +258,52 @@ bool try_parse_offset_and_reg(span_t *src_code, uint8_t bits, int32_t *offset, r
 
     *src_code = slice_by_start(src_code, 1); // eat the ')'
     return true;
+}
+
+bool validate_imm(int32_t imm, uint8_t bits) {
+    #define fits_in_n_bits(l, n) ((l) < (1 << (n)) && (l) > -((1 << ((n)-1)) + 1))
+
+    // if imm is positive, it might be an overflow, so pretend the sign bit isn't here first,
+    if (fits_in_n_bits(imm, bits-(imm > 0)))
+        return true;
+
+    // if this is a positive value that can only fit by including the sign bit, emit a warning
+    if (imm > 0 && fits_in_n_bits(imm, bits)) {
+        fprintf(stderr, "\x1b[33mWARN: Value '%d' will be interpreted as signed value '%d'\x1b[0m\n", imm, ~(imm >> 1));
+        return true;
+    }
+
+    fprintf(stderr, "\x1b[31mValue '%d' cannot be used an operand here, because it doesn't fit in %d bits\x1b[0m\n", imm, bits);
+    return false;
+}
+
+bool validate_code_offset(int32_t offset) {
+    if (offset % 2 == 0)
+        return true;
+
+    fprintf(stderr, "\x1b[31mBranch or jump offsets must be 2-byte aligned (and %d isn't)\x1b[0m\n", offset);
+    return false;
+}
+
+bool validate_instr(instr_t instr) {
+    switch (format_of(instr.opname)) {
+        case REG:
+            return true;
+        case IMM:
+        case LOAD:
+            return validate_imm(instr.as_imm.operand, 12);
+        case STORE:
+            return validate_imm(instr.as_store.offset, 12);
+        case BRANCH:
+            return validate_imm(instr.as_branch.offset, 13)
+                && validate_code_offset(instr.as_branch.offset);
+        case JUMP:
+            return validate_imm(instr.as_jump.offset, 21)
+                && validate_code_offset(instr.as_jump.offset);
+        default:
+            fprintf(stderr, "unknown instr got into validate_instr!!!\n");
+            return false;
+    }
 }
 
 bool try_parse_single_instr(span_t src_code, instr_t *instr) {
@@ -273,92 +318,100 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
 
     switch (format_of(instr->opname)) {
         case REG: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_reg.rd)))
+            if (!try_parse_reg(&src_code, &(instr->as_reg.rd)))
                 return false;
-            trim_comma_and_space();
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_reg.rs1)))
+            if (!try_parse_reg(&src_code, &(instr->as_reg.rs1)))
                 return false;
-            trim_comma_and_space();
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_reg.rs2)))
+            if (!try_parse_reg(&src_code, &(instr->as_reg.rs2)))
                 return false;
             break;
         }
         case IMM: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_imm.rd)))
+            if (!try_parse_reg(&src_code, &(instr->as_imm.rd)))
                 return false;
-            trim_comma_and_space();
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_imm.rs)))
+            if (!try_parse_reg(&src_code, &(instr->as_imm.rs)))
                 return false;
-            trim_comma_and_space();
-            if (!try_parse_imm(eat_next_word(&src_code), 12, &(instr->as_imm.operand)))
+            if (!try_parse_imm(&src_code, &(instr->as_imm.operand)))
                 return false;
 
             break;
         }
         case LOAD: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_imm.rd)))
+            if (!try_parse_reg(&src_code, &(instr->as_imm.rd)))
                 return false;
 
-            trim_comma_and_space();
-
-            if (!try_parse_offset_and_reg(&src_code, 12, &(instr->as_imm.operand), &(instr->as_imm.rs)))
+            if (!try_parse_offset_and_reg(&src_code, &(instr->as_imm.operand), &(instr->as_imm.rs)))
                 return false;
 
             break;
         }
         case STORE: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_store.rval)))
+            if (!try_parse_reg(&src_code, &(instr->as_store.rval)))
                 return false;
 
-            trim_comma_and_space();
-
-            if (!try_parse_offset_and_reg(&src_code, 12, &(instr->as_store.offset), &(instr->as_store.rbase)))
+            if (!try_parse_offset_and_reg(&src_code, &(instr->as_store.offset), &(instr->as_store.rbase)))
                 return false;
 
             break;
         }
         case BRANCH: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_branch.rs1)))
+            if (!try_parse_reg(&src_code, &(instr->as_branch.rs1)))
                 return false;
 
-            trim_comma_and_space();
-
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_branch.rs2)))
+            if (!try_parse_reg(&src_code, &(instr->as_branch.rs2)))
                 return false;
 
-            trim_comma_and_space();
-
-            if (!try_parse_imm(eat_next_word(&src_code), 13, &(instr->as_branch.offset)))
+            if (!try_parse_imm(&src_code, &(instr->as_branch.offset)))
                 return false;
-
-            if (instr->as_branch.offset % 2 != 0) {
-                fprintf(stderr, "\x1b[31mBranch or jump offsets must be 2-byte aligned\x1b[0m\n");
-                return false;
-            }
 
             break;
         }
         case JUMP: {
-            if (!try_parse_reg(eat_next_word(&src_code), &(instr->as_jump.rd)))
+            if (!try_parse_reg(&src_code, &(instr->as_jump.rd)))
                 return false;
 
-            trim_comma_and_space();
-
-            if (!try_parse_imm(eat_next_word(&src_code), 21, &(instr->as_jump.offset)))
+            if (!try_parse_imm(&src_code, &(instr->as_jump.offset)))
                 return false;
-
-            if (instr->as_jump.offset % 2 != 0) {
-                fprintf(stderr, "\x1b[31mBranch or jump offsets must be 2-byte aligned\x1b[0m\n");
-                return false;
-            }
 
             break;
         }
+        case PSEUDO: {
+            switch (instr->opname) {
+                #define P_INSTR(name, reg_count, imm_count, translation)\
+                    case _opname_of(name): {\
+                        int32_t imms[imm_count];\
+                        regnum_t regs[reg_count];\
+                        for (int i = 0; i < reg_count; i++) {\
+                            if (!try_parse_reg(&src_code, &(regs[i])))\
+                                return false;\
+                        }\
+                        for (int i = 0; i < imm_count; i++) {\
+                            if (!try_parse_imm(&src_code, &(imms[i])))\
+                                return false;\
+                        }\
+                        *instr = translation;\
+                        break;\
+                    }
+
+                    X_PSEUDO_INSTRS
+                #undef P_INSTR
+                default:
+                    fprintf(stderr, "Unimplemented pseudo-instr '%s' in parser\n", fmt_opcode(instr->opname));
+                    return false;
+            }
+            break;
+        }
         default:
+            fprintf(stderr, "Unimplemented opcode '%s' in parser\n", fmt_opcode(instr->opname));
             return false;
     }
 
     if (!check_line_ending(&src_code))
+        return false;
+
+    // final checks
+    // need to put them here bc it simplifies pseudo-instr handling
+    if (!validate_instr(*instr))
         return false;
 
     return true;

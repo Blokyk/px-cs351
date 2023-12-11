@@ -26,7 +26,7 @@ void print_action(cpu_t *cpu, instr_t *instr, regnum_t rd_num, regnum_t rs1_num,
             fprintf(stderr, "            = " #operation "\n");\
             break;
 
-        X_INSTRS
+        X_REAL_INSTRS
     #undef INSTR
 
         default:
@@ -122,7 +122,7 @@ void step(cpu_t *cpu) {
             operation;\
             break;
 
-        X_INSTRS
+        X_REAL_INSTRS
     #undef INSTR
 
         default:

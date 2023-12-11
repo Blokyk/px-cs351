@@ -9,7 +9,9 @@
 const char* fmt_opcode(opname_t op) {
     switch (op) {
         #define INSTR(_0, name, _1, _2, _3, _4) case _opname_of(name): return #name;
-            X_INSTRS
+        #define P_INSTR(name, _0, _1, _2) case _opname_of(name): return #name;
+            X_ALL_INSTRS
+        #undef P_INSTR
         #undef INSTR
         default:
             return "<?instr?>";
@@ -18,8 +20,10 @@ const char* fmt_opcode(opname_t op) {
 
 instr_format_t format_of(opname_t op) {
     switch (op) {
+        #define P_INSTR(name, _0, _1, _2) INSTR(PSEUDO, name,,,,)
         #define INSTR(format, name, _0, _1, _2, _3) case _opname_of(name): return format;
-            X_INSTRS
+            X_ALL_INSTRS
+        #undef P_INSTR
         #undef INSTR
         default:
             return ERROR_FMT;
@@ -49,6 +53,10 @@ char* fmt_instr(instr_t instr) {
             break;
         case JUMP:
             asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, instr.as_jump.offset);
+            break;
+        case PSEUDO:
+            fprintf(stderr, "WARN: Printing of pseudo-instructions isn't supported.\n");
+            asprintf(&out, "<pseudo:%s>", opcode_str);
             break;
         default:
             asprintf(&out, "<0x%x>", instr.opname);

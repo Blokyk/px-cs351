@@ -7,7 +7,7 @@
 #include "instructions.x"
 
 typedef enum {
-    ERROR_FMT, REG, IMM, LOAD, STORE, BRANCH, JUMP
+    ERROR_FMT, REG, IMM, LOAD, STORE, BRANCH, JUMP, PSEUDO
 } instr_format_t;
 
 #define opname_of(opcode, f3, f7) opcode | (f3 << 7) | (f7 << 10)
@@ -15,7 +15,9 @@ typedef enum {
 typedef enum {
     op_err,
 #define INSTR(_0, name, opcode, f3, f7, _1) _opname_of(name) = opname_of(opcode, f3, f7),
-    X_INSTRS
+#define P_INSTR(name, _0, _1, _2) _opname_of(name),
+    X_ALL_INSTRS
+#undef P_INSTR
 #undef INSTR
 } opname_t;
 
@@ -28,7 +30,7 @@ typedef struct {
         struct { regnum_t rd; regnum_t rs; int32_t operand; } as_imm;
         struct { regnum_t rbase; regnum_t rval; int32_t offset; } as_store;
         struct { regnum_t rs1; regnum_t rs2; int32_t offset; } as_branch;
-        struct { regnum_t rd; int32_t operand; } as_upper_imm;
+        // struct { regnum_t rd; int32_t operand; } as_upper_imm;
         struct { regnum_t rd; int32_t offset; } as_jump;
         int32_t err_code;
     };

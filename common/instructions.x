@@ -18,7 +18,10 @@
 #define X_JUMP(name, opcode) \
     INSTR(JUMP, name, opcode, 0x0, 0x0, do { rd = pc + 4; pc += offset; } while(0))
 
-#define X_INSTRS \
+#define X_PSEUDO(name, reg_count, imm_count, ...) \
+    P_INSTR(name, reg_count, imm_count, ((instr_t)__VA_ARGS__))
+
+#define X_REAL_INSTRS \
     X_REG(add,    0b0110011, 0x0, 0x00, rd = rs1 + rs2) \
     X_REG(sub,    0b0110011, 0x0, 0x20, rd = rs1 - rs2) \
     X_IMM(addi,   0b0010011, 0x0, rd = rs + imm) \
@@ -29,3 +32,12 @@
     X_BRANCH(blt, 0b1100011, 0x4, rs1 <  rs2) \
     X_BRANCH(bge, 0b1100011, 0x5, rs1 >= rs2) \
     X_JUMP(jal,   0b1101111)
+
+#define X_PSEUDO_INSTRS \
+    X_PSEUDO(j,  0, 1, { op_jal,  .as_jump = { .rd = 0, .offset = imms[0] }}) \
+    X_PSEUDO(li, 1, 1, { op_addi, .as_imm  = { .rd = regs[0], .rs = 0, .operand = imms[0] }}) \
+    X_PSEUDO(mv, 2, 0, { op_addi, .as_imm  = { .rd = regs[0], .rs = regs[1], .operand = 0 }})
+
+#define X_ALL_INSTRS\
+    X_REAL_INSTRS\
+    X_PSEUDO_INSTRS
