@@ -32,16 +32,14 @@ void trim_left(span_t *span, char ignored_char) {
     span->length = length - i;
 }
 
-// @return The length of the line once left-trimmed
-int cleanup_line_start(span_t *span) {
+void cleanup_line_start(span_t *span) {
     while (span->length != 0 && isspace(span->str[0])) {
         span->str++; span->length--;
     }
 
-    if (span->length == 0 || span->str[0] == '#')
-        return 0;
-
-    return span->length;
+    // if there's a comment, pretend the line is empty
+    if (span->length != 0 && span->str[0] == '#')
+        span->length = 0;
 }
 
 bool check_line_ending(span_t *span) {
@@ -94,7 +92,7 @@ opname_t parse_op_name(span_t span) {
     char *name_str = as_string(&span);
     fprintf(stderr, "\x1b[31mCouldn't understand mnemonic '%s'\x1b[0m\n", name_str);
     free(name_str);
-    return op_ERROR;
+    return op_err;
 }
 
 bool try_parse_num(span_t span, int32_t *res) {
@@ -268,7 +266,7 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
 
     instr->opname = parse_op_name(eat_next_word(&src_code));
 
-    if (instr->opname == op_ERROR)
+    if (instr->opname == op_err)
         return false;
 
     trim_left(&src_code, ' ');
@@ -369,12 +367,19 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
 instr_t parse_line(const char* src_line, size_t length) {
     span_t line_span = (span_t){ .str = src_line, .length = length };
 
-    if (cleanup_line_start(&line_span) == 0)
-        return (instr_t){ .opname = op_ERROR };
+    cleanup_line_start(&line_span);
+
+    // if the line is empty after cleanup
+    if (line_span.length == 0)
+        return (instr_t){ .opname = op_err, .err_code = 0};
 
     instr_t instr;
-    if (!try_parse_single_instr(line_span, &instr))
-        return (instr_t){ .opname = op_ERROR };
+    if (!try_parse_single_instr(line_span, &instr)) {
+        char *instr_str = fmt_instr(instr);
+        fprintf(stderr, "Failed to parse instr... Last known state: %s\n", instr_str);
+        free(instr_str);
+        return (instr_t){ .opname = op_err, .err_code = 1};
+    }
 
     return instr;
 }

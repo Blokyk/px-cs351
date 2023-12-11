@@ -40,7 +40,7 @@ opname_t decode_opname(uint32_t raw_instr) {
         case JUMP:
             break;
         default:
-            return op_ERROR;
+            return op_err;
     }
 
     return opname_of(opcode, f3, f7);
@@ -50,7 +50,7 @@ instr_t decode(uint32_t raw_instr) {
     instr_t instr;
     instr.opname = decode_opname(raw_instr);
 
-    if (instr.opname == op_ERROR)
+    if (instr.opname == op_err)
         return instr;
 
     switch (format_of(instr.opname)) {
@@ -82,7 +82,7 @@ instr_t decode(uint32_t raw_instr) {
             break;
         default:
             fprintf(stderr, "Unknown or invalid instruction: 0x%08x!\n", raw_instr);
-            instr.opname = op_ERROR;
+            instr.opname = op_err;
             break;
     }
 

@@ -46,13 +46,15 @@ int main(int argc, char **argv) {
 
         instr_t instr = parse_line(line, n);
 
-        if (instr.opname != op_ERROR) {
+        if (instr.opname != op_err) {
             char *instr_str = fmt_instr(instr);
             printf("%-35s    -> %08x\n", instr_str, encode(instr));
             fprintf(hex_output_file, "%08x\n", encode(instr));
             free(instr_str);
+        } else if (instr.err_code == 0) {
+            printf("\e[2mIgnored empty line or comment: %.*s\e[0m\n", (int)n, line);
         } else {
-            printf("\e[2mLine was not an instruction: %.*s\e[0m\n", (int)n, line);
+            printf("\e[31;2mInvalid instruction: %.*s\e[0m\n", (int)n, line);
         }
 
     }

@@ -13,7 +13,7 @@ typedef enum {
 #define opname_of(opcode, f3, f7) opcode | (f3 << 7) | (f7 << 10)
 #define _opname_of(name) op_ ## name
 typedef enum {
-    op_ERROR,
+    op_err,
 #define INSTR(_0, name, opcode, f3, f7, _1) _opname_of(name) = opname_of(opcode, f3, f7),
     X_INSTRS
 #undef INSTR
@@ -30,6 +30,7 @@ typedef struct {
         struct { regnum_t rs1; regnum_t rs2; int32_t offset; } as_branch;
         struct { regnum_t rd; int32_t operand; } as_upper_imm;
         struct { regnum_t rd; int32_t offset; } as_jump;
+        int32_t err_code;
     };
 } instr_t;
 
