@@ -1,8 +1,4 @@
-#
-# n_th_fibonacci_number.rvi
-#
 # Find the Nth fibonacci number.
-# x5 holds N, and result is written in x3
 
 # _START:
     addi a0, zero, 6 # N = 6
@@ -19,11 +15,11 @@
         add t1, x0, t0
         add t0, x0, t2
         addi t3, t3, 1
-        blt t3, a0, -16 # fixme: blt decoding not working
+        blt t3, a0, -16
     addi a0, t2, 0
     # ret ???
     # HALT:
-        # jal x0, 0
+        # jal x0,  0
 
 # EXPECTED
 # sp: 0x4000
