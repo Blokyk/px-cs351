@@ -20,13 +20,13 @@
 opname_t decode_opname(uint32_t raw_instr) {
     unsigned opcode = get_opcode(raw_instr);
 
-    // while `opcode` isn't *actually* the opname of the instr,
-    // we know that opcodes are enough to determine the format
-    // an instruction AND that every (opcode, f3?, f7?) tuple
-    // has at least one valid instr with f3=0 and f7=0 (iff
-    // the opcode is valid obviously). Thus, we can pass that
-    // to `format_of` and we know it'll at least be able to
-    // tell us the format of the current instr
+    // while `opcode` isn't *actually* the opname of the instr, we
+    // know that opcodes are enough to determine the format of an
+    // instruction AND that every (opcode, f3?, f7?) tuple has at
+    // least one valid instr with f3=0 and f7=0 (iff the opcode is
+    // valid obviously). Thus, we can pass that to `format_of` and
+    // we know it'll at least be able to tell us the format of the
+    // current instr
 
     unsigned f3 = 0, f7 = 0;
     switch (format_of(opcode)) {

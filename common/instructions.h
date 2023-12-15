@@ -14,8 +14,8 @@ typedef enum {
 #define _opname_of(name) op_ ## name
 typedef enum {
     op_err,
-#define INSTR(_0, name, opcode, f3, f7, _1) _opname_of(name) = opname_of(opcode, f3, f7),
 #define P_INSTR(name, _0, _1, _2) _opname_of(name),
+#define INSTR(_0, name, opcode, f3, f7, _1) _opname_of(name) = opname_of(opcode, f3, f7),
     X_ALL_INSTRS
 #undef P_INSTR
 #undef INSTR
