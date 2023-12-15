@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../common/utils.h"
+
 uint32_t encode(instr_t instr) {
     opname_t opname = instr.opname;
 
@@ -39,13 +41,12 @@ uint32_t encode(instr_t instr) {
             );
         }
         case STORE: {
-            unsigned IMM_MASK = 0b11111;
             regnum_t rval = instr.as_store.rval;
             regnum_t rbase = instr.as_store.rbase;
 
             uint32_t offset = instr.as_store.offset;
-            uint32_t lo = offset & IMM_MASK;
-            uint32_t hi = (offset & ~IMM_MASK) >> 5;
+            uint32_t lo = get_bits(offset, 0, 4);
+            uint32_t hi = get_bits(offset, 5, 11);
 
             return (uint32_t)(opcode
                 | (lo << 7)
@@ -60,10 +61,12 @@ uint32_t encode(instr_t instr) {
             regnum_t rs2 = instr.as_branch.rs2;
 
             uint32_t offset = instr.as_branch.offset;
-            uint32_t b11 = (offset   & 0b0100000000000) >> 11;
-            uint32_t b4_1 = (offset  & 0b0000000011110) >> 1;
-            uint32_t b10_5 = (offset & 0b0011111100000) >> 5;
-            uint32_t b12 = (offset   & 0b1000000000000) >> 12;
+            assert(offset % 2 == 0);
+
+            uint32_t b11 = get_bit(offset, 11);
+            uint32_t b4_1 = get_bits(offset, 1, 4);
+            uint32_t b10_5 = get_bits(offset, 5, 10);
+            uint32_t b12 = get_bit(offset, 12);
 
             return (uint32_t)(opcode
                 | (b11 << 7)
@@ -81,12 +84,10 @@ uint32_t encode(instr_t instr) {
             uint32_t offset = instr.as_jump.offset;
             assert(offset % 2 == 0);
 
-            //                            1   1
-            //                            4   0   C   8   4   0
-            uint32_t b19_12 = (offset & 0b011111111000000000000) >> 12;
-            uint32_t b11 = (offset    & 0b000000000100000000000) >> 11;
-            uint32_t b10_1 = (offset  & 0b000000000011111111110) >> 1;
-            uint32_t b20 = (offset    & 0b100000000000000000000) >> 20;
+            uint32_t b19_12 = get_bits(offset, 12, 19);
+            uint32_t b11 = get_bit(offset, 11);
+            uint32_t b10_1 = get_bits(offset, 1, 10);
+            uint32_t b20 = get_bit(offset, 20);
 
             return (uint32_t)(opcode
                 | (rd << 7)

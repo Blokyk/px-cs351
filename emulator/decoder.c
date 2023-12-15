@@ -3,20 +3,22 @@
 #include <stdio.h>
 
 #include "utils.h"
+#include "../common/utils.h"
 
-const uint32_t OPCODE_MASK = (uint32_t)0b1111111;
-const uint32_t FUNCT3_MASK = (uint32_t)0b111 << 12;
-const uint32_t FUNCT7_MASK = (uint32_t)0b1111111 << 25;
+#define get_opcode(val) get_bits(val, 0, 6)
+#define get_f3(val) get_bits(val, 12, 14)
 
-const uint32_t RD_MASK  = (uint32_t)0b11111 << 7;
-const uint32_t RS1_MASK = (uint32_t)0b11111 << 15;
-const uint32_t RS2_MASK = (uint32_t)0b11111 << 20;
-
-const uint32_t IMM_I_MASK  = FUNCT7_MASK + RS2_MASK;
-const uint32_t IMM_U_MASK = ~(RD_MASK + OPCODE_MASK);
+#define get_f7(val) get_bits(val, 25, 31)
+#define get_rd(val) ((regnum_t)get_bits(val, 7, 11))
+#define get_rs1(val) ((regnum_t)get_bits(val, 15, 19))
+#define get_rs2(val) ((regnum_t)get_bits(val, 20, 24))
+#define get_imm_i(val) sign_extend(get_bits(val, 20, 31), 11)
+#define get_imm_s(val) sign_extend((get_f7(val) << 5) | get_bits(val, 7, 11), 11)
+#define get_imm_sb(val) sign_extend((get_bit(val, 31) << 12) | (get_bits(val, 25, 30) << 5) | (get_bits(val, 8, 11) << 1) | (get_bit(val, 7) << 11), 12)
+#define get_imm_uj(val) sign_extend((get_bit(val, 31) << 20) | (get_bits(val, 21, 30) << 1) | (get_bit(val, 21) << 11) | (get_bits(val, 12, 20) << 12), 20)
 
 opname_t decode_opname(uint32_t raw_instr) {
-    unsigned opcode = opcode_of(raw_instr);
+    unsigned opcode = get_opcode(raw_instr);
 
     // while `opcode` isn't *actually* the opname of the instr,
     // we know that opcodes are enough to determine the format
@@ -42,6 +44,8 @@ opname_t decode_opname(uint32_t raw_instr) {
         default:
             return op_err;
     }
+
+    printf("opcode = 0x%x, f3 = 0x%x, f7 = 0x%x\n", opcode, f3, f7);
 
     return opname_of(opcode, f3, f7);
 }
