@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     uint32_t *memory = malloc(mem_size);
     bzero(memory, mem_size);
 
-    int i = 0;
+    size_t i = 0;
     while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) != EOF) {
         i++;
 
