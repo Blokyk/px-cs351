@@ -12,33 +12,30 @@
 #include "span.h"
 
 void trim_left(span_t *span, char ignored_char) {
-    const char *str = span->str;
-    size_t length = span->length;
-
-    if (length == 0)
-        return;
-
-    if (length >= 1 && str[0] != ignored_char)
-        return;
-
-    size_t i = 1;
-
-    while (i < length && str[i] == ignored_char) i++;
-
-    span->str = str + i;
-    span->length = length - i;
+    while (span->length != 0 && span->str[0] == ignored_char) {
+        span->str++; span->length--;
+    }
 }
 
-void trim_comma_and_space(span_t *span) {
-    trim_left(span, ' ');
-    trim_left(span, ',');
-    trim_left(span, ' ');
-}
-
-void cleanup_line_start(span_t *span) {
+void trim_space(span_t *span) {
     while (span->length != 0 && isspace(span->str[0])) {
         span->str++; span->length--;
     }
+}
+
+void trim_comma_and_space(span_t *span) {
+    trim_space(span);
+
+    // we only want to trim a single comma, no more
+    if (span->length != 0 && span->str[0] == ',') {
+        span->str++; span->length--;
+    }
+
+    trim_space(span);
+}
+
+void cleanup_line_start(span_t *span) {
+    trim_space(span);
 
     // if there's a comment, pretend the line is empty
     if (span->length != 0 && span->str[0] == '#')
@@ -46,14 +43,11 @@ void cleanup_line_start(span_t *span) {
 }
 
 bool check_line_ending(span_t *span) {
-    // check that the rest of the line is either empty or whitespace
-    trim_left(span, ' ');
+    trim_space(span);
 
     if (span->length == 0)
         return true;
     if (span->str[0] == '#')
-        return true;
-    if (span->str[0] == '\n')
         return true;
 
     as_tmp_string(*span,
@@ -229,7 +223,7 @@ bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) 
     if (!try_parse_imm(src_code, offset))
         return false;
 
-    trim_left(src_code, ' ');
+    trim_space(src_code);
 
     if (src_code->str[0] != '(') {
         fprintf(stderr, "\x1b[31mExpected '(' in `offset(reg)` notation, but got '%c'\x1b[0m\n", src_code->str[0]);
@@ -238,7 +232,7 @@ bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) 
 
     *src_code = slice_by_start(src_code, 1); // eat the '('
 
-    trim_left(src_code, ' ');
+    trim_space(src_code);
 
     // since try_parse_reg ignores commas as well, we need to guard against it ourselves
     if (src_code->str[0] == ',') {
@@ -275,6 +269,7 @@ bool validate_imm(int32_t imm, uint8_t bits) {
 
     fprintf(stderr, "\x1b[31mValue '%d' cannot be used an operand here, because it doesn't fit in %d bits\x1b[0m\n", imm, bits);
     return false;
+    #undef fits_in_n_bits
 }
 
 bool validate_code_offset(int32_t offset) {
