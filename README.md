@@ -50,7 +50,7 @@ inutilement.
 
 La cheffe d'orchestre de tout cela est la fonction `try_parse_single_instr`,
 initialement assez garnie, mais après les différentes factorisations
-résultantes de l'evolution organique du code, ce n'est finalement pas
+résultantes de l'évolution organique du code, ce n'est finalement pas
 bien plus qu'un énorme bloc `switch`.
 
 [^1] Le sous-ensemble que nous devons implémenter est de toute façon
@@ -59,7 +59,18 @@ bien plus qu'un énorme bloc `switch`.
 * Avez-vous vu des motifs récurrents émerger ? Avez-vous "factorisé" ces motifs
 pour éviter de les répéter ? Si non, serait-ce difficile ?
 
-***[COMPLÉTER ICI]***
+Nous avons pris une approche déclarative pour les instructions, en
+utilisant notamment la technique des [X macros](https://en.wikipedia.org/wiki/X_macro),
+nous permettant d'éliminer la plupart du code répétitif inhérent au
+parser (&cie.). Ainsi, il est trivial d'ajouter de nouvelles
+instructions, tant que le format est déjà implémenté. L'introduction
+des pseudo-instructions fut aussi relativement rapide, et nous a
+donné quelques pistes à explorer pour améliorer la "déclarativité"
+de notre code et simplifier le parser. Nous avons aussi essayé de
+"compacter" certaines informations, par exemple en se servant de
+l’énumération listant les différentes instructions pour aussi
+stocker les champs `opcode`, `funct3` et `funct7` pour rendre
+l'écriture de l'encodeur plus facile.
 
 * Comment avez-vous procédé pour écrire les tests ? Étes-vous confiant·e·s que
 toutes les instructions sont gérées et tous les types d'arguments sont couverts ?
@@ -71,7 +82,15 @@ correctement (nom de base + nom de l'ABI); de la même façon, le test
 instructions supportées, en variant les arguments pour vérifier les
 cas limites des différents formats d'instruction.
 
-todo: breakup `all_instrs` into a dedicated folder of smaller tests for each instr
+Si l'entièreté des 39 instructions RV64I de base devaient être
+supportées, des tests aussi exhaustifs deviendraient vite difficiles
+à maintenir et écrire, et c'est sans compter les complexité
+additionnelles d'un assembleur classique (labels, options, sections,
+etc). Dans ce cas-là, il serait nécessaire de revoir notre stratégie,
+par exemple en générant des tests ou en utilisant du fuzzing pour
+avoir une couverture maximale.
+
+<!-- todo: breakup `all_instrs` into a dedicated folder of smaller tests for each instr -->
 
 * Quelle a été votre expérience avec l'utilisation et la compréhension de la
 documentation fournie sur l'encodage des instructions RISC-V ?
