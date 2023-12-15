@@ -1,4 +1,4 @@
-AUTEURS := BoulartEmilie_CourvoisierZoe
+AUTEURS := CourvoisierZoe
 
 CFLAGS := -g -fsanitize=address
 
@@ -56,7 +56,7 @@ cleanall: clean
 clean:
 	@ find tests \( -name '*.o' -o -name '*.s' -name '*.bin' -o -name '*.hex' -o -name '*.state' \) -delete
 
-pack: pactar
+pack: tar
 tar: all cleanall
 	@ tar -cvzf ../$(AUTEURS).tgz *
 	@ echo "==="; echo "Created: ../$(AUTEURS).tgz"
