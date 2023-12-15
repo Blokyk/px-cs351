@@ -98,24 +98,24 @@ opname_t parse_op_name(span_t span) {
 }
 
 bool try_parse_num(span_t span, int32_t *res) {
-    // todo: implement 0b base specifier
 
     int chars_read;
     int scanf_res;
 
+    // todo: implement 0b base specifier
     as_tmp_string(span,
-        scanf_res = sscanf(span.str, "%i%n", res, &chars_read)
+        scanf_res = sscanf(span.str, "%i%n", res, &chars_read);
     );
+
+    // scanf should do exactly 1 conversion
+    if (scanf_res == 1 && (size_t)chars_read == span.length)
+        return true;
 
     // scanf might read a value that overflows, so check it didn't read more
     // than log10(2^32) = 10 (+1 for sign char)
     // fixme: fix scanf overflow (e.g. by using strtol or custom solution)
     if (chars_read > 11)
         goto INVALID_NUM;
-
-    // scanf should do exactly 1 conversion
-    if (scanf_res == 1 && (size_t)chars_read == span.length)
-        return true;
 
 INVALID_NUM:
     as_tmp_string(span,

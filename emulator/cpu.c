@@ -5,49 +5,6 @@
 
 #include "decoder.h"
 
-void print_action(cpu_t *cpu, instr_t *instr, regnum_t rd_num, regnum_t rs1_num, regnum_t rs2_num, int32_t imm) {
-    // used in the "pseudo-code" in instr def
-    // #define pc cpu->pc
-    // #define regs(num) cpu->regs[num]
-    // #define mem(offset) (cpu->mem_base + (offset))
-    #define branch(condition) pc += (condition) ? (offset) : 0
-
-    // #define rd
-    // #define rs1
-    // #define rs2
-    // #define rs
-    // #define rbase
-    // #define rval
-    // #define offset
-
-    switch (instr->opname) {
-    #define INSTR(_0, name, _1, _2, _3, operation) \
-        case _opname_of(name):\
-            fprintf(stderr, "            = " #operation "\n");\
-            break;
-
-        X_REAL_INSTRS
-    #undef INSTR
-
-        default:
-            fprintf(stderr, "\x1b[1;31mwtfffff\x1b[0m\n");
-            exit(1);
-    }
-
-    #undef pc
-    #undef regs
-    #undef mem
-    #undef branch
-
-    #undef rd
-    #undef rs1
-    #undef rs2
-    #undef rs
-    #undef rbase
-    #undef rval
-    #undef offset
-}
-
 void step(cpu_t *cpu) {
     uint32_t raw_instr = *(uint32_t*)(cpu->mem_base + cpu->pc);
     instr_t curr_instr = decode(raw_instr);
@@ -99,8 +56,6 @@ void step(cpu_t *cpu) {
             fprintf(stderr, "\x1b[1;31mwtfffff\x1b[0m\n");
             exit(1);
     }
-
-    print_action(cpu, &curr_instr, rd_num, rs1_num, rs2_num, imm);
 
     // used in the "pseudo-code" in instr def
     #define pc cpu->pc

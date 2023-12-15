@@ -12,6 +12,15 @@ span_t shrink(const span_t *span, size_t new_length);
 
 void split(const span_t *span, size_t s1_end_exclusive, span_t *s1, span_t *s2);
 
+// NEVER use a return inside the block!!!
+#define as_tmp_string(span, ...)\
+    do {\
+        char old_terminator = ((char*)((span).str))[(span).length];\
+        ((char*)((span).str))[(span).length] = '\0';\
+        __VA_ARGS__;\
+        ((char*)((span).str))[(span).length] = old_terminator;\
+    } while(0)
+
 // technically, we shouldn't be reading or writing anything
 // beyond `span.str[length-1]`, since it is theoretically
 // possible to create a span_t over any arbitrary piece of
@@ -31,12 +40,3 @@ void split(const span_t *span, size_t s1_end_exclusive, span_t *s1, span_t *s2);
 // into a c-string, by replacing `span.str[length]` with '\0'
 // (and switching it back later obviously), so that we can call
 // sscanf directly, which will take care of sign, base, etc
-
-// NEVER use a return inside the block!!!
-#define as_tmp_string(span, ...)\
-    do {\
-        char old_terminator = ((char*)((span).str))[(span).length];\
-        ((char*)((span).str))[(span).length] = '\0';\
-        __VA_ARGS__;\
-        ((char*)((span).str))[(span).length] = old_terminator;\
-    } while(0)

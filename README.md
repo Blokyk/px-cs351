@@ -90,7 +90,7 @@ etc). Dans ce cas-là, il serait nécessaire de revoir notre stratégie,
 par exemple en générant des tests ou en utilisant du fuzzing pour
 avoir une couverture maximale.
 
-<!-- todo: breakup `all_instrs` into a dedicated folder of smaller tests for each instr -->
+todo: breakup `all_instrs` into a dedicated folder of smaller tests for each instr
 
 * Quelle a été votre expérience avec l'utilisation et la compréhension de la
 documentation fournie sur l'encodage des instructions RISC-V ?

@@ -1,6 +1,7 @@
 AUTEURS := CourvoisierZoe
 
-CFLAGS := -g -fsanitize=address
+CC ?= gcc
+CFLAGS := -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
 
 EXE_ASM := riscv-assembler
 SRC_ASM := $(wildcard assembler/*.c)
@@ -19,7 +20,7 @@ else
 	CAPTURE := fd
 endif
 
-TEST_DIR := tests/
+TEST_DIR := tests
 
 help:
 	@echo "Targets: all, test, clean, cleanall, pack"
@@ -27,10 +28,10 @@ help:
 all: $(EXE_ASM) $(EXE_EMU)
 
 $(EXE_ASM): $(SRC_ASM) $(SRC_COMMON)
-	gcc $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
+	$(CC) $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
 
 $(EXE_EMU): $(SRC_EMU) $(SRC_COMMON)
-	gcc $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
+	$(CC) $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
 
 test: $(EXE_ASM) $(EXE_EMU) test.py
 	@python3 test.py -v --tb=short --no-header --capture=$(CAPTURE)
@@ -41,7 +42,7 @@ $(SRC_COMMON): $(HEADER_COMMON)
 
 .PHONY: all test clean cleanall tar pack help
 
-tests/%: all
+$(TEST_DIR)/%: all
 	@echo -e '---- \x1b[1mAssembling\x1b[2m [riscv-assembler $@.s $@.hex]\x1b[0m ----\n'
 	@./riscv-assembler $@.s $@.hex
 	@echo -e '\n---- \x1b[1mExecuting\x1b[2m [riscv-emulator $@.hex $@.state]\x1b[0m ----\n'

@@ -18,12 +18,15 @@ ld    x8,     -45   (  x1 )
 
 sd  x16, -1(x0)
 sd  x0, -4(x9)
+sd  x0, 0x7ff(x15)
+sd  x0, -0x7ff(x11)
 
 beq x0, x1, -16
 bne x2, x3, 4
-blt x4, x5, -4096 # right at the limit
+blt x4, x5, -0x1000 # right at the limit
 bge x6, x7, 0
 
+jal x2, -0x100000
 jal x2, 0xffffe
 jal x31, -0xabcde
 

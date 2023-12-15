@@ -7,15 +7,7 @@
 
 #define get_opcode(val) get_bits(val, 0, 6)
 #define get_f3(val) get_bits(val, 12, 14)
-
 #define get_f7(val) get_bits(val, 25, 31)
-#define get_rd(val) ((regnum_t)get_bits(val, 7, 11))
-#define get_rs1(val) ((regnum_t)get_bits(val, 15, 19))
-#define get_rs2(val) ((regnum_t)get_bits(val, 20, 24))
-#define get_imm_i(val) sign_extend(get_bits(val, 20, 31), 11)
-#define get_imm_s(val) sign_extend((get_f7(val) << 5) | get_bits(val, 7, 11), 11)
-#define get_imm_sb(val) sign_extend((get_bit(val, 31) << 12) | (get_bits(val, 25, 30) << 5) | (get_bits(val, 8, 11) << 1) | (get_bit(val, 7) << 11), 12)
-#define get_imm_uj(val) sign_extend((get_bit(val, 31) << 20) | (get_bits(val, 21, 30) << 1) | (get_bit(val, 21) << 11) | (get_bits(val, 12, 20) << 12), 20)
 
 opname_t decode_opname(uint32_t raw_instr) {
     unsigned opcode = get_opcode(raw_instr);
@@ -49,6 +41,14 @@ opname_t decode_opname(uint32_t raw_instr) {
 
     return opname_of(opcode, f3, f7);
 }
+
+#define get_rd(val) ((regnum_t)get_bits(val, 7, 11))
+#define get_rs1(val) ((regnum_t)get_bits(val, 15, 19))
+#define get_rs2(val) ((regnum_t)get_bits(val, 20, 24))
+#define get_imm_i(val) sign_extend(get_bits(val, 20, 31), 11)
+#define get_imm_s(val) sign_extend((get_f7(val) << 5) | get_bits(val, 7, 11), 11)
+#define get_imm_sb(val) sign_extend((get_bit(val, 31) << 12) | (get_bits(val, 25, 30) << 5) | (get_bits(val, 8, 11) << 1) | (get_bit(val, 7) << 11), 12)
+#define get_imm_uj(val) sign_extend((get_bit(val, 31) << 20) | (get_bits(val, 21, 30) << 1) | (get_bit(val, 21) << 11) | (get_bits(val, 12, 20) << 12), 20)
 
 instr_t decode(uint32_t raw_instr) {
     instr_t instr;
