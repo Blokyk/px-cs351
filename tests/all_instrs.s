@@ -50,6 +50,7 @@ mv x1, x2
 # sd x1, x2, 0(x3) # extra reg (offset+reg syntax)
 # sub  x0, x1 # missing reg
 # addi x0, x1, 0x1000 # operand outside range
+# addi x0, x1, 0x1111111111111111 # operand overflows int32_t
 # ld   x2, -0xffff(x2)
 # sd   x5, -0x8ff(x9)
 # beq x0, x1, 1
