@@ -1,3 +1,5 @@
+#define _GNU_SOURCE // for asprintf
+
 #include "parser.h"
 
 #include <assert.h>
@@ -10,6 +12,14 @@
 #include <stdbool.h>
 
 #include "span.h"
+#include "../common/utils.h"
+
+// ARGH GLOBAL STATE! ...ok sorry for the jump scare, but it seems
+// like the only other solution that doesn't require rewriting the
+// whole parser is using `setjmp` and `longjmp`, and I don't know
+// how frowned up those are sooooo ._.
+char *last_parse_error = NULL;
+#define set_parser_error(fmt, ...) asprintf(&last_parse_error, fmt __VA_OPT__(,) __VA_ARGS__)
 
 void trim_left(span_t *span, char ignored_char) {
     while (span->length != 0 && span->str[0] == ignored_char) {
@@ -51,7 +61,7 @@ bool check_line_ending(span_t *span) {
         return true;
 
     as_tmp_string(*span,
-        fprintf(stderr, "\x1b[31mExpected a newline or end-of-file, but got '%s' instead!\x1b[0m\n", span->str)
+        set_parser_error("Expected a newline or end-of-file, but got '%s' instead!", span->str)
     );
     return false;
 }
@@ -64,13 +74,12 @@ span_t eat_next_word(span_t *span) {
 
     if (i == 0) {
         if (span->length == 0) {
-            fprintf(stderr, "\x1b[31mUnexpected end-of-file, expected a name or number!\x1b[0m\n");
+            set_parser_error("Unexpected end-of-file, expected a name or number!");
         } else {
             as_tmp_string(*span,
-                fprintf(stderr, "\x1b[31mExpected a name or number, but got '%s' instead!\x1b[0m\n", span->str)
+                set_parser_error("Expected a name or number, but got '%s' instead!", span->str)
             );
         }
-        exit(1);
     }
 
     span_t word;
@@ -91,7 +100,7 @@ opname_t parse_op_name(span_t span) {
     #undef P_INSTR
 
     as_tmp_string(span,
-        fprintf(stderr, "\x1b[31mCouldn't understand mnemonic '%s'\x1b[0m\n", span.str);
+        set_parser_error("Couldn't understand mnemonic '%s'", span.str);
     );
 
     return op_err;
@@ -119,14 +128,15 @@ bool try_parse_num(span_t span, int32_t *res) {
 
 INVALID_NUM:
     as_tmp_string(span,
-        fprintf(stderr, "\x1b[31m'%s' is not a valid number!\x1b[0m\n", span.str)
+        set_parser_error("'%s' is not a valid number!", span.str)
     );
     return false;
 }
 
 bool try_parse_imm(span_t *src_code, int32_t *imm) {
     trim_comma_and_space(src_code);
-    if (!try_parse_num(eat_next_word(src_code), imm))
+    span_t num_span = eat_next_word(src_code);
+    if (num_span.length == 0 || !try_parse_num(num_span, imm))
         return false;
 
     return true;
@@ -135,6 +145,9 @@ bool try_parse_imm(span_t *src_code, int32_t *imm) {
 bool try_parse_reg(span_t *src_code, regnum_t *reg) {
     trim_comma_and_space(src_code);
     span_t regname_span = eat_next_word(src_code);
+
+    if (regname_span.length == 0)
+        return false;
 
     if (2 > regname_span.length || regname_span.length > 3) {
         // only valid register name of length 4
@@ -213,7 +226,7 @@ bool try_parse_reg(span_t *src_code, regnum_t *reg) {
 
 INVALID_REG_NAME: {
         as_tmp_string(regname_span,
-            fprintf(stderr, "\x1b[31m'%s' is not a valid register name!\x1b[0m\n", regname_span.str)
+            set_parser_error("'%s' is not a valid register name!", regname_span.str)
         );
         return false;
     }
@@ -226,7 +239,7 @@ bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) 
     trim_space(src_code);
 
     if (src_code->str[0] != '(') {
-        fprintf(stderr, "\x1b[31mExpected '(' in `offset(reg)` notation, but got '%c'\x1b[0m\n", src_code->str[0]);
+        set_parser_error("Expected '(' in `offset(reg)` notation, but got '%c'", src_code->str[0]);
         return false;
     }
 
@@ -236,7 +249,7 @@ bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) 
 
     // since try_parse_reg ignores commas as well, we need to guard against it ourselves
     if (src_code->str[0] == ',') {
-        fprintf(stderr, "Unexpected ',' character in `imm(reg)` syntax, expected a register name\n!");
+        set_parser_error("Unexpected ',' character in `imm(reg)` syntax, expected a register name\n!");
         return false;
     }
 
@@ -246,7 +259,7 @@ bool try_parse_offset_and_reg(span_t *src_code, int32_t *offset, regnum_t* reg) 
     trim_left(src_code, ' ');
 
     if (src_code->str[0] != ')') {
-        fprintf(stderr, "\x1b[31mMissing closing ')' in `offset(reg)` notation (got '%c' instead)\x1b[0m\n", src_code->str[0]);
+        set_parser_error("Missing closing ')' in `offset(reg)` notation (got '%c' instead)", src_code->str[0]);
         return false;
     }
 
@@ -263,11 +276,11 @@ bool validate_imm(int32_t imm, uint8_t bits) {
 
     // if this is a positive value that can only fit by including the sign bit, emit a warning
     if (imm > 0 && fits_in_n_bits(imm, bits)) {
-        fprintf(stderr, "\x1b[33mWARN: Value '%d' will be interpreted as signed value '%d'\x1b[0m\n", imm, ~(imm >> 1));
+        fprintf(stderr, "\e[33mWARN: Value '%d' will be interpreted as signed value '%d'\n", imm, ~(imm >> 1));
         return true;
     }
 
-    fprintf(stderr, "\x1b[31mValue '%d' cannot be used an operand here, because it doesn't fit in %d bits\x1b[0m\n", imm, bits);
+    set_parser_error("Value '%d' cannot be used an operand here, because it doesn't fit in %d bits", imm, bits);
     return false;
     #undef fits_in_n_bits
 }
@@ -276,7 +289,7 @@ bool validate_code_offset(int32_t offset) {
     if (offset % 2 == 0)
         return true;
 
-    fprintf(stderr, "\x1b[31mBranch or jump offsets must be 2-byte aligned (and %d isn't)\x1b[0m\n", offset);
+    set_parser_error("Branch or jump offsets must be 2-byte aligned (and %d isn't)", offset);
     return false;
 }
 
@@ -296,15 +309,17 @@ bool validate_instr(instr_t instr) {
             return validate_imm(instr.as_jump.offset, 21)
                 && validate_code_offset(instr.as_jump.offset);
         default:
-            fprintf(stderr, "unknown instr got into validate_instr!!!\n");
+            assert(false && "unknown instr got into validate_instr!!!\n");
             return false;
     }
 }
 
 bool try_parse_single_instr(span_t src_code, instr_t *instr) {
-    // todo: implement pseudo-instr
+    span_t opname_span = eat_next_word(&src_code);
+    if (opname_span.length == 0)
+        return false;
 
-    instr->opname = parse_op_name(eat_next_word(&src_code));
+    instr->opname = parse_op_name(opname_span);
 
     if (instr->opname == op_err)
         return false;
@@ -391,13 +406,13 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
                     X_PSEUDO_INSTRS
                 #undef P_INSTR
                 default:
-                    fprintf(stderr, "Unimplemented pseudo-instr '%s' in parser\n", fmt_opcode(instr->opname));
+                    set_parser_error("Unimplemented pseudo-instr '%s' in parser\n", fmt_opcode(instr->opname));
                     return false;
             }
             break;
         }
         default:
-            fprintf(stderr, "Unimplemented opcode '%s' in parser\n", fmt_opcode(instr->opname));
+            set_parser_error("Unimplemented opcode '%s' in parser\n", fmt_opcode(instr->opname));
             return false;
     }
 
@@ -412,7 +427,7 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
     return true;
 }
 
-instr_t parse_line(const char* src_line, size_t length) {
+instr_t parse_line(const char* src_line, size_t length, int line_number) {
     span_t line_span = (span_t){ .str = src_line, .length = length };
 
     cleanup_line_start(&line_span);
@@ -423,9 +438,16 @@ instr_t parse_line(const char* src_line, size_t length) {
 
     instr_t instr;
     if (!try_parse_single_instr(line_span, &instr)) {
-        char *instr_str = fmt_instr(instr);
-        fprintf(stderr, "Failed to parse instr... Last known state: %s\n", instr_str);
-        free(instr_str);
+        if (last_parse_error != NULL) {
+            fprintf(stderr, "\e[31mError occurred on line \e[1m%d\e[22m:\n\t%s\e[0m\n", line_number, last_parse_error);
+            free(last_parse_error);
+            last_parse_error = NULL;
+        } else {
+            char *instr_str = fmt_instr(instr);
+            fprintf(stderr, "\e[31mFailed to parse instr... \e[2m(Last known state: %s)\e[0m\n", instr_str);
+            free(instr_str);
+        }
+
         return (instr_t){ .opname = op_err, .err_code = 1};
     }
 

@@ -34,10 +34,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    int line_count = 0;
+
     char *line = NULL;
     size_t _;
     ssize_t n;
     while ((n = getline(&line, &_, asm_input_file)) != -1) {
+        line_count++;
+
         // getline also includes the '\n'
         if (!feof(asm_input_file)) {
             // remove ending '\n'
@@ -45,7 +49,7 @@ int main(int argc, char **argv) {
             if (n == 0) continue;
         }
 
-        instr_t instr = parse_line(line, n);
+        instr_t instr = parse_line(line, n, line_count);
 
         if (instr.opname != op_err) {
             char *instr_str = fmt_instr(instr);
@@ -53,11 +57,8 @@ int main(int argc, char **argv) {
             fprintf(hex_output_file, "%08x\n", encode(instr));
             free(instr_str);
         } else if (instr.err_code == 0) {
-            printf("\e[2mIgnored empty line or comment: %.*s\e[0m\n", (int)n, line);
-        } else {
-            printf("\e[31;2mInvalid instruction: %.*s\e[0m\n", (int)n, line);
+            printf("\e[2m%.*s\e[0m\n", (int)n, line);
         }
-
     }
     free(line);
 

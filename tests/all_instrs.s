@@ -42,12 +42,14 @@ mv x1, x2
 # checks invalid instrs
 # this has to be tested manually, because the test harness doesn't support invalid code
 #
+# addiii x0, x0, x0
+# d x1, 0(x2)
 # add x0, x0, x0 garbage
 # add  x0, x1, x2, x3 # extra reg
 # ld x1, 0(x2), x8 # extra reg (offset+reg syntax)
 # sd x1, x2, 0(x3) # extra reg (offset+reg syntax)
 # sub  x0, x1 # missing reg
-# addi x0, x1, 0x8ff # operand outside range
+# addi x0, x1, 0x1000 # operand outside range
 # ld   x2, -0xffff(x2)
 # sd   x5, -0x8ff(x9)
 # beq x0, x1, 1
@@ -56,7 +58,6 @@ mv x1, x2
 # bge x0, x2, -0xabcdef
 # jal x0, 0xabcdef
 # j 0xabcdef
-# li x0, 0x8ff
 # li x0, 0xffff
 # mv x1, x2, 0
 
@@ -65,8 +66,8 @@ mv x1, x2
     #   sub x0 zero zero
     # overflow:
     #   addi x0, x0, 0xFFF # this one really SHOULD be possible, according to "Signed Immediates for I- and S-Type Instructions" from the riscv-asm-manual
-    #   beq  x0, x0, 0x1FFF
+    #   beq  x0, x0, 0x1FFE
     #   jal  x0, 0x1FFFFE
 
 #cmt w/o strtng spc
-# some comment without a \n after (nasty bug i actual had in lotus ;-;)
+# some comment without a \n after (nasty bug i actually had in lotus ;-;)

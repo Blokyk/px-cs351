@@ -102,8 +102,6 @@ documentation fournie sur l'encodage des instructions RISC-V ?
   - [x] Pris en compte les cas particuliers comme les valeurs immédiates négatives et le bit manquant dans l'encodage de `jal`
   - [x] Écrit du code de gestion d'erreur pour que le programme ait une réaction propre si le code assembleur est invalide _(pas demandé par le sujet)_
 
-todo: add a line number for errors
-
 ## Rendu 3
 
 Questions à remplir _avant_ de programmer l'émulateur (10 lignes sont conseillées à chaque fois pour bien y réfléchir) :
