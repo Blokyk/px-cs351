@@ -23,9 +23,11 @@ endif
 TEST_DIR := tests
 
 help:
-	@echo "Targets: all, test, clean, cleanall, pack"
+	@echo "Targets: all, asm, emu test, tests/<test-name>, clean, cleanall, pack"
 
-all: $(EXE_ASM) $(EXE_EMU)
+all: asm emu
+asm: $(EXE_ASM)
+emu: $(EXE_EMU)
 
 $(EXE_ASM): $(SRC_ASM) $(SRC_COMMON)
 	$(CC) $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
@@ -40,7 +42,7 @@ $(SRC_ASM): $(HEADER_ASM)
 $(SRC_EMU): $(HEADER_EMU)
 $(SRC_COMMON): $(HEADER_COMMON)
 
-.PHONY: all test clean cleanall tar pack help
+.PHONY: all asm emu test clean cleanall tar pack help
 
 $(TEST_DIR)/%: all
 	@echo -e '---- \x1b[1mAssembling\x1b[2m [riscv-assembler $@.s $@.hex]\x1b[0m ----\n'
