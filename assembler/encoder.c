@@ -99,7 +99,7 @@ uint32_t encode(instr_t instr) {
         }
         default: {
             char *instr_str = fmt_instr(instr);
-            fprintf(stderr, "\x1b[31mFATAL: Tried to encode unknown instruction: %s\x1b[0m\n", instr_str);
+            fprintf(stderr, "\e[31mFATAL: Tried to encode unknown instruction: %s\e[0m\n", instr_str);
             free(instr_str);
             exit(1);
         }

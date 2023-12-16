@@ -14,7 +14,7 @@ void step(cpu_t *cpu) {
     if (curr_instr.opname == op_err) {
         // we use 0x0 as a "marker" instr, so we don't want an error in that case
         if (raw_instr != 0x0)
-            fprintf(stderr, "\x1b[31mUnknown or invalid instruction: 0x%08x!\x1b[0m\n", raw_instr);
+            fprintf(stderr, "\e[31mUnknown or invalid instruction: 0x%08x!\e[0m\n", raw_instr);
 
         cpu->pc = ERROR_PC;
         return;
@@ -53,7 +53,7 @@ void step(cpu_t *cpu) {
             imm = curr_instr.as_jump.offset;
             break;
         default:
-            fprintf(stderr, "\x1b[1;31mwtfffff\x1b[0m\n");
+            fprintf(stderr, "\e[1;31mwtfffff\e[0m\n");
             exit(1);
     }
 
@@ -81,7 +81,7 @@ void step(cpu_t *cpu) {
     #undef INSTR
 
         default:
-            fprintf(stderr, "\x1b[1;31mwtfffff\x1b[0m\n");
+            fprintf(stderr, "\e[1;31mwtfffff\e[0m\n");
             exit(1);
     }
 
