@@ -35,14 +35,14 @@ int main(int argc, char **argv) {
     bzero(memory, mem_size);
 
     size_t i = 0;
-    while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) != EOF) {
+    while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) == 1) {
         i++;
 
         // check after increment because scanf writes directly based on `i` during the loop's check
         if (i == mem_size) {
             mem_size *= 2;
             memory = realloc(memory, mem_size);
-            bzero(memory+mem_size/2, mem_size/2);
+            bzero(memory + mem_size/2, mem_size/2);
         }
     }
 
