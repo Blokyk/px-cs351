@@ -7,6 +7,7 @@ addI x2, x3, -0
 addI x4, x5, 100
 addi x6, x7, -0x1aE
 addi x8, x9, 0x7ff
+addi x10, x11, 0b11111111111
 
    
  
@@ -23,7 +24,7 @@ sd  x0, -0x7ff(x11)
 
 beq x0, x1, -16
 bne x2, x3, 4
-blt x4, x5, -0x1000 # right at the limit
+blt x4, x5, -0b11111111110 # right at the limit
 bge x6, x7, 0
 
 jal x2, -0x100000

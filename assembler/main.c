@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
             free(instr_str);
         } else if (instr.err_code == 0) {
             printf("\e[2m%.*s\e[0m\n", (int)n, line);
+        } else {
+            printf("\e[31m%.*s\e[0m\n", (int)n, line);
         }
     }
     free(line);

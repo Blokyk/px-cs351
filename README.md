@@ -35,8 +35,11 @@ Chaque type d'opérande est gérée par une fonction différente:
 Les registres sont reconnus soit par `strcmp` (par ex. pour `zero`,
 `gp`, etc...), soit vu comme une paire lettre-nombre qui est ensuite
 traduite en "vrai" numéro de registre.
-Les immédiats utilise un simple `scanf(%i)`, permettant de gérer des
-entiers signés et en base 8, 10, ou 16.
+Les immédiats utilisent une fonction basique qui parcours la chaîne
+de gauche à droite; celle-ci supporte les bases 2, 8, 10, 16, avec
+leurs préfixes habituels ("0b" pour base 2, "0" pour base 8, "0x"
+pour base 16). Elle prend aussi soin de ne pas causer d'overflow
+lors de la conversion.
 
 Une fois les opérandes récupérée, l'instruction est vérifiée par
 `validate_instr`, qui assure, par exemple, que l'offset utilisé

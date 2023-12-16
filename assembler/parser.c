@@ -107,26 +107,72 @@ opname_t parse_op_name(span_t span) {
 }
 
 bool try_parse_num(span_t span, int32_t *res) {
-    int chars_read;
-    int scanf_res;
+    if (span.length == 0)
+        return false;
 
-    int64_t tmp_res;
-    // todo: implement 0b base specifier
-    as_tmp_string(span,
-        scanf_res = sscanf(span.str, "%li%n", &tmp_res, &chars_read);
-    );
+    // we need to offset the starting char in case there's a sign or a base specifier
+    size_t i = 0;
 
-    // scanf might read a value that overflows, so check it didn't read more
-    // than log10(2^32) = 10 (+1 for sign char)
-    // fixme: fix scanf overflow (e.g. by using strtol or custom solution)
-    if (chars_read > 11 || tmp_res >= UINT32_MAX)
-        goto INVALID_NUM;
+    int8_t sign = 1;
+    uint8_t base = 10;
+    if (span.str[0] == '-') {
+        i++;
+        sign = -1;
+    } else if (span.str[0] == '+') {
+        i++;
+    }
 
-    *res = tmp_res;
+    if (span.str[i] == '0') {
+        switch (span.length-i) {
+            case 1:
+                *res = 0;
+                return true;
+            case 2:
+                *res = span.str[i+1] - '0';
+                if (*res < 0 || *res > 7)
+                    goto INVALID_NUM;
+                *res = sign * *res;
+                return true;
+            default:
+                char base_char = span.str[i+1];
+                if (base_char == 'x') {
+                    i += 2;
+                    base = 16;
+                } else if (base_char == 'b') {
+                    i += 2;
+                    base = 2;
+                } else {
+                    i += 1;
+                    base = 8;
+                }
 
-    // scanf should do exactly 1 conversion
-    if (scanf_res == 1 && (size_t)chars_read == span.length)
-        return true;
+                break;
+        }
+    }
+
+    uint64_t tmp_res = 0;
+    while (i < span.length) {
+        if (!isxdigit(span.str[i]))
+            goto INVALID_NUM;
+
+        uint8_t num = span.str[i] - '0';
+
+        if (base == 16 && (uint8_t)(tolower(span.str[i]) - 'a') < 7)
+            num = tolower(span.str[i]) - 'a' + 10;
+        else if (num >= base)
+            goto INVALID_NUM;
+
+        tmp_res = tmp_res*base + num;
+
+        // exit early if parsing would overflow an int32_t
+        if (tmp_res > UINT32_MAX)
+            goto INVALID_NUM;
+
+        i++;
+    }
+
+    *res = (int32_t)(sign*tmp_res);
+    return true;
 
 INVALID_NUM:
     as_tmp_string(span,
