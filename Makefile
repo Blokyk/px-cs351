@@ -1,18 +1,15 @@
 AUTEURS := CourvoisierZoe
 
 CC ?= gcc
-CFLAGS := -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
+CFLAGS := -O0 -Wall -Wextra -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
+
+SRC_COMMON := $(wildcard common/*.c) $(wildcard common/*.h) common/instructions.x
 
 EXE_ASM := riscv-assembler
-SRC_ASM := $(wildcard assembler/*.c)
-HEADER_ASM := $(wildcard assembler/*.h)
+SRC_ASM := $(SRC_COMMON) $(wildcard assembler/*.c) $(wildcard assembler/*.h)
 
 EXE_EMU := riscv-emulator
-SRC_EMU := $(wildcard emulator/*.c)
-HEADER_EMU := $(wildcard emulator/*.h)
-
-SRC_COMMON := $(wildcard common/*.c)
-HEADER_COMMON := $(wildcard common/*.h) common/instructions.x
+SRC_EMU := $(SRC_COMMON) $(wildcard emulator/*.c) $(wildcard emulator/*.h)
 
 ifeq (${PYTEST_CAPTURE},0)
 	CAPTURE := no
@@ -29,18 +26,14 @@ all: asm emu
 asm: $(EXE_ASM)
 emu: $(EXE_EMU)
 
-$(EXE_ASM): $(SRC_ASM) $(SRC_COMMON)
-	$(CC) $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
+$(EXE_ASM): $(SRC_ASM)
+	$(CC) $(filter %.c,$^) -o $@ $(CFLAGS)
 
-$(EXE_EMU): $(SRC_EMU) $(SRC_COMMON)
-	$(CC) $^ -o $@ -Wall -Wextra -O0 $(CFLAGS)
+$(EXE_EMU): $(SRC_EMU)
+	$(CC) $(filter %.c,$^) -o $@ $(CFLAGS)
 
 test: $(EXE_ASM) $(EXE_EMU) test.py
 	@python3 test.py -v --tb=short --no-header --capture=$(CAPTURE)
-
-$(SRC_ASM): $(HEADER_ASM)
-$(SRC_EMU): $(HEADER_EMU)
-$(SRC_COMMON): $(HEADER_COMMON)
 
 .PHONY: all asm emu test clean cleanall tar pack help
 
