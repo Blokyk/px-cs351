@@ -5,8 +5,27 @@
 
 #include "decoder.h"
 
+uint8_t* try_access_mem(cpu_t *cpu, size_t address) {
+    if (address < cpu->mem_size)
+        return cpu->mem_base + address;
+
+    fprintf(stderr,
+        "\e[31mOut-of-bounds access @ \e[1m0x%lx\e[22m (max address is \e[1m0x%lx\e[22m)\e[0m\n",
+        address, cpu->mem_size
+    );
+
+    cpu->pc = ERROR_PC;
+    return NULL;
+}
+
 void step(cpu_t *cpu) {
-    uint32_t raw_instr = *(uint32_t*)(cpu->mem_base + cpu->pc);
+    uint32_t *raw_instr_ptr = (uint32_t*)try_access_mem(cpu, cpu->pc);
+
+    if (raw_instr_ptr == NULL)
+        return;
+
+    uint32_t raw_instr = *raw_instr_ptr;
+
     instr_t curr_instr = decode(raw_instr);
 
     size_t old_pc = cpu->pc;
@@ -60,7 +79,7 @@ void step(cpu_t *cpu) {
     // used in the "pseudo-code" in instr def
     #define pc cpu->pc
     #define regs(num) cpu->regs[num]
-    #define mem(offset) (cpu->mem_base + (offset))
+    #define mem(offset) ({ uint8_t *addr = try_access_mem(cpu, offset); if (addr == NULL) return; addr; })
     #define branch(condition) pc += (condition) ? (offset) : 0
 
     #define rd regs(rd_num)
@@ -82,7 +101,7 @@ void step(cpu_t *cpu) {
 
         default:
             fprintf(stderr, "\e[1;31mwtfffff\e[0m\n");
-            exit(1);
+            abort();
     }
 
     #undef pc
