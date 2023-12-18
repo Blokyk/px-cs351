@@ -123,3 +123,17 @@ void step(cpu_t *cpu) {
     if (cpu->pc == old_pc)
         cpu->pc += 4;
 }
+
+char *dump_regs(cpu_t *cpu) {
+    char* fmt = " x%d: %c\e[2m0x\e[0m%16lx\n";
+    char *out = malloc(37*31);
+
+    for (int i = 0; i < 31; i++) {
+        // ignore leading space if reg name will have more than 2 digits
+        char *i_fmt = i < 10 ? fmt : fmt+1;
+
+        sprintf(out+i*37, fmt, i, cpu->regs[i] < 0 ? '-' : ' ', cpu->regs[i] < 0 ? -cpu->regs[i] : cpu->regs[i]);
+    }
+
+    return out;
+}
