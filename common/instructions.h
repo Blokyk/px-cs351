@@ -13,12 +13,18 @@ typedef enum {
 #define opname_of(opcode, f3, f7) opcode | (f3 << 7) | (f7 << 10)
 #define _opname_of(name) op_ ## name
 typedef enum {
-    op_err,
-#define P_INSTR(name, _0, _1, _2) _opname_of(name),
 #define INSTR(_0, name, opcode, f3, f7, _1) _opname_of(name) = opname_of(opcode, f3, f7),
-    X_ALL_INSTRS
-#undef P_INSTR
+    X_REAL_INSTRS
 #undef INSTR
+
+    // because they don't have any unique identifier derivable from
+    // we need to change the new starting_point for the pseudo-instr
+    // x-macro, so they might accidentally overlap with existing opnames
+    op_err = 0b1 << 31,
+
+#define P_INSTR(name, _0, _1, _2) _opname_of(name),
+    X_PSEUDO_INSTRS
+#undef P_INSTR
 } opname_t;
 
 typedef uint8_t regnum_t;

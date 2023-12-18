@@ -33,6 +33,13 @@ uint32_t encode(instr_t instr) {
             regnum_t rs = instr.as_imm.rs;
             uint32_t operand = instr.as_imm.operand;
 
+            // some I instructions need a certain value in
+            // the IMM field (or parts of it), so we use the
+            // f7 field to encode that, since the other I
+            // instructions don't use it
+            if (f7 != 0x0)
+                operand |= f7;
+
             return (uint32_t)(opcode
                 | (rd << 7)
                 | (f3 << 12)

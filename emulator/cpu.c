@@ -18,6 +18,18 @@ uint8_t* try_access_mem(cpu_t *cpu, size_t address) {
     return NULL;
 }
 
+void env_call(cpu_t *cpu) {
+    fprintf(stderr, "ecall triggered! (pc=0x%16lx, sp=0x%16lx)\n", cpu->pc, cpu->regs[2]);
+    char *s = dump_regs(cpu);
+    fprintf(stderr, "%s\n", s);
+    free(s);
+}
+
+void env_break(cpu_t *cpu) {
+    fprintf(stderr, "ebreak triggered! (pc=0x%16lx, sp=0x%16lx)\n", cpu->pc, cpu->regs[2]);
+    __asm__ volatile("int $0x03");
+}
+
 void step(cpu_t *cpu) {
     uint32_t *raw_instr_ptr = (uint32_t*)try_access_mem(cpu, cpu->pc);
 
@@ -81,6 +93,8 @@ void step(cpu_t *cpu) {
     #define regs(num) cpu->regs[num]
     #define mem(offset) ({ uint8_t *addr = try_access_mem(cpu, offset); if (addr == NULL) return; addr; })
     #define branch(condition) pc += (condition) ? (offset) : 0
+    #define ecall() env_call(cpu)
+    #define ebreak() env_break(cpu)
 
     #define rd regs(rd_num)
     #define rs1 regs(rs1_num)
