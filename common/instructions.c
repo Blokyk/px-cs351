@@ -1,5 +1,3 @@
-#define _GNU_SOURCE // for asprintf
-
 #include "instructions.h"
 
 #include <stdbool.h>

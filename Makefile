@@ -1,7 +1,9 @@
 AUTEURS := CourvoisierZoe
 
+DEFINES := _GNU_SOURCE
+
 CC ?= gcc
-CFLAGS := -O0 -Wall -Wextra -g -fsanitize=address -fsanitize=undefined -fsanitize=leak
+CFLAGS := -O0 -Wall -Wextra -g -fsanitize=address -fsanitize=undefined -fsanitize=leak $(addprefix -D,$(DEFINES))
 
 SRC_COMMON := $(wildcard common/*.c) $(wildcard common/*.h) common/instructions.x
 
