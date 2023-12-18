@@ -266,6 +266,9 @@ class TestRISCVEmulation:
         if os.path.exists(prog_state):
             os.remove(prog_state)
 
+        if expected is None:
+            pytest.skip("no EXPECTED block in test file")
+
         # Run the command, ignoring I/Os (we only use output files)
         subprocess.run(
             [RISCV_EMULATOR, prog_hex, prog_state],
@@ -274,10 +277,9 @@ class TestRISCVEmulation:
             check=True,
         )
 
-        if expected is None:
-            pytest.skip("no EXPECTED block in test file")
         if not os.path.exists(prog_state):
             pytest.skip("emulation not implemented yet")
+
         with open(prog_state, "r") as fp:
             state = fp.read()
         if state == "":
