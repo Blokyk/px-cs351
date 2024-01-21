@@ -29,7 +29,7 @@ instr_format_t format_of(opname_t op) {
 }
 
 char* fmt_instr(instr_t instr) {
-    #define as_signed_bits(n, val) ((val << (32-n)) >> (32-n))
+    #define as_signed_bits(n, val) ((int32_t)((uint32_t)val << (32-n)) >> (32-n))
 
     const char * const opcode_str = fmt_opcode(instr.opname);
 

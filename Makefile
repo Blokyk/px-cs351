@@ -3,7 +3,10 @@ AUTEURS := CourvoisierZoe
 DEFINES := _GNU_SOURCE
 
 CC ?= gcc
-CFLAGS := -O0 -Wall -Wextra -g -fsanitize=address -fsanitize=undefined -fsanitize=leak $(addprefix -D,$(DEFINES))
+CFLAGS := -O0 -Wall -Wextra -g
+CFLAGS += -fsanitize=address -fsanitize=undefined -fsanitize=leak
+CFLAGS += -fno-sanitize=alignment
+CFLAGS += $(addprefix -D,$(DEFINES))
 
 SRC_COMMON := $(wildcard common/*.c) $(wildcard common/*.h) common/instructions.x
 
