@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "decoder.h"
 
@@ -20,9 +21,7 @@ uint8_t* try_access_mem(cpu_t *cpu, size_t address) {
 
 void env_call(cpu_t *cpu) {
     fprintf(stderr, "ecall triggered! (pc=0x%16lx, sp=0x%16lx)\n", cpu->pc, cpu->regs[2]);
-    char *s = dump_regs(cpu);
-    fprintf(stderr, "%s\n", s);
-    free(s);
+    dump_regs(cpu);
 }
 
 void env_break(cpu_t *cpu) {
@@ -138,16 +137,16 @@ void step(cpu_t *cpu) {
         cpu->pc += 4;
 }
 
-char *dump_regs(cpu_t *cpu) {
-    char* fmt = " x%d: %c\e[2m0x\e[0m%16lx\n";
-    char *out = malloc(37*31);
+void dump_regs(cpu_t *cpu) {
+    char fmt[] = " x%d: %c\e[2m0x\e[0m%16ld\n";
 
-    for (int i = 0; i < 31; i++) {
+    for (int i = 0; i < 32; i++) {
+        if (cpu->regs[i] == 0)
+            continue;
+
         // ignore leading space if reg name will have more than 2 digits
         char *i_fmt = i < 10 ? fmt : fmt+1;
 
-        sprintf(out+i*37, fmt, i, cpu->regs[i] < 0 ? '-' : ' ', cpu->regs[i] < 0 ? -cpu->regs[i] : cpu->regs[i]);
+        printf(i_fmt, i, cpu->regs[i] < 0 ? '-' : ' ', cpu->regs[i] < 0 ? -cpu->regs[i] : cpu->regs[i]);
     }
-
-    return out;
 }

@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
 
     while (cpu.pc != ERROR_PC) {
         step(&cpu);
+        dump_regs(&cpu);
 
         // for (int i = 0; i < 31; i++) {
         //     char* fmt = i < 10 ? " x%d: %c\e[2m0x\e[0m%lx\n" : "x%d: %c\e[2m0x\e[0m%lx\n";
@@ -57,9 +58,11 @@ int main(int argc, char **argv) {
         // }
     }
 
-    char *s = dump_regs(&cpu);
-    printf("%s\n", s);
-    free(s);
+    // dump_regs(&cpu);
+
+    for (int i = 0; i < 32; i++) {
+        fprintf(emu_output_file, "x%d: %ld\n", i, cpu.regs[i]);
+    }
 
     free(memory);
     fclose(hex_input_file);

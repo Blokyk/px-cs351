@@ -18,4 +18,4 @@ typedef struct {
 #define init_cpu(memory, mem_size) ((cpu_t){ .pc = 0, .regs = { [2] = mem_size }, .mem_base = memory, .mem_size = mem_size })
 
 void step(cpu_t *cpu);
-char *dump_regs(cpu_t *cpu);
+void dump_regs(cpu_t *cpu);
