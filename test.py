@@ -164,48 +164,49 @@ def convert_gcc_syntax(input, output):
         fp.write(asm)
 
 
-class TestRISCVAssembler:
-    def get_reference(self, file, tmp_path):
-        prog = os.path.splitext(file)[0]
-        prog_obj = os.path.join(tmp_path, "tmp.o")
-        prog_bin = os.path.join(tmp_path, "tmp.bin")
+def get_reference_hex(file, tmp_path):
+    prog = os.path.splitext(file)[0]
+    prog_obj = os.path.join(tmp_path, "tmp.o")
+    prog_bin = os.path.join(tmp_path, "tmp.bin")
 
-        if RV64_GCC is not None:
-            file_gcc = file[:-2] + ".s.gnu"
-            convert_gcc_syntax(file, file_gcc)
-            subprocess.run(
-                [
-                    RV64_GCC,
-                    "-march=rv64i",
-                    "-mabi=lp64",
-                    "-x",
-                    "assembler",
-                    "-c",
-                    file_gcc,
-                    "-o",
-                    prog_obj,
-                ],
-                check=True,
-            )
-        else:
-            subprocess.run(
-                [CLANG, "--target=riscv64", "-march=rv64g", "-c", file, "-o", prog_obj],
-                check=True,
-            )
+    if RV64_GCC is not None:
+        file_gcc = file[:-2] + ".s.gnu"
+        convert_gcc_syntax(file, file_gcc)
         subprocess.run(
-            [OBJCOPY, "-O", "binary", "-j", ".text", prog_obj, prog_bin], check=True
+            [
+                RV64_GCC,
+                "-march=rv64i",
+                "-mabi=lp64",
+                "-x",
+                "assembler",
+                "-c",
+                file_gcc,
+                "-o",
+                prog_obj,
+            ],
+            check=True,
         )
+    else:
+        subprocess.run(
+            [CLANG, "--target=riscv64", "-march=rv64g", "-c", file, "-o", prog_obj],
+            check=True,
+        )
+    subprocess.run(
+        [OBJCOPY, "-O", "binary", "-j", ".text", prog_obj, prog_bin], check=True
+    )
 
-        with open(prog_bin, "rb") as fp:
-            data = fp.read()
-        assert len(data) % 4 == 0
-        return struct.unpack("<{}I".format(len(data) // 4), data)
+    with open(prog_bin, "rb") as fp:
+        data = fp.read()
+    assert len(data) % 4 == 0
+    return struct.unpack("<{}I".format(len(data) // 4), data)
 
+
+class TestRISCVAssembler:
     @pytest.mark.parametrize("filename", ALL_FILES)
     def test_assembler(self, filename, tmp_path):
         prog = os.path.splitext(filename)[0]
         prog_hex = prog + ".hex"
-        reference = self.get_reference(filename, tmp_path)
+        reference = get_reference_hex(filename, tmp_path)
 
         if os.path.exists(prog_hex):
             os.remove(prog_hex)
@@ -254,12 +255,12 @@ class TestRISCVEmulation:
         return expected or None
 
     @pytest.mark.parametrize("filename", ALL_FILES)
-    def test_emulator(self, filename):
+    def test_emulator(self, filename, tmp_path):
         prog, _ = os.path.splitext(filename)
         prog_hex = prog + ".hex"
         prog_state = prog + ".state"
 
-        expected = self.get_expected(filename)
+        expected = self.get_expected(prog + ".s")
 
         if not os.path.exists(prog_hex):
             pytest.skip("No assembler output {}".format(prog_hex))
