@@ -138,7 +138,7 @@ void step(cpu_t *cpu) {
 }
 
 void dump_regs(cpu_t *cpu) {
-    char fmt[] = " x%d: %c\e[2m0x\e[0m%16ld\n";
+    char fmt[] = " x%d: %c\e[2m0x\e[0m%16lx\n";
 
     for (int i = 0; i < 32; i++) {
         if (cpu->regs[i] == 0)
