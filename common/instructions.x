@@ -53,6 +53,7 @@
     X_LOAD(ld,      0b0000011, 0x3, int64_t) \
     X_LOAD(lbu,     0b0000011, 0x4, uint8_t) \
     X_LOAD(lhu,     0b0000011, 0x5, uint16_t) \
+    X_LOAD(lwu,     0b0000011, 0x6, uint32_t) \
     \
     X_STORE(sb,     0b0100011, 0x0, int8_t) \
     X_STORE(sh,     0b0100011, 0x1, int16_t) \
