@@ -29,6 +29,8 @@ instr_format_t format_of(opname_t op) {
 }
 
 char* fmt_instr(instr_t instr) {
+    #define as_signed_bits(n, val) ((val << (32-n)) >> (32-n))
+
     const char * const opcode_str = fmt_opcode(instr.opname);
 
     char *out;
@@ -38,19 +40,19 @@ char* fmt_instr(instr_t instr) {
             asprintf(&out, "%-5s    x%d, x%d, x%d", opcode_str, instr.as_reg.rd, instr.as_reg.rs1, instr.as_reg.rs2);
             break;
         case IMM:
-            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, instr.as_imm.operand);
+            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
             break;
         case LOAD:
             asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_imm.rd, instr.as_imm.operand, instr.as_imm.rs);
             break;
         case STORE:
-            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, instr.as_store.offset, instr.as_store.rbase);
+            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, instr.as_store.offset, as_signed_bits(12, instr.as_store.rbase));
             break;
         case BRANCH:
-            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, instr.as_branch.offset);
+            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, as_signed_bits(13, instr.as_branch.offset));
             break;
         case JUMP:
-            asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, instr.as_jump.offset);
+            asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, as_signed_bits(21, instr.as_jump.offset));
             break;
         case PSEUDO:
             fprintf(stderr, "WARN: Printing of pseudo-instructions isn't supported.\n");
@@ -62,4 +64,5 @@ char* fmt_instr(instr_t instr) {
     }
 
     return out;
+    #undef as_signed_bits
 }

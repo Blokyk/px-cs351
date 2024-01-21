@@ -322,7 +322,7 @@ bool validate_imm(int32_t imm, uint8_t bits) {
 
     // if this is a positive value that can only fit by including the sign bit, emit a warning
     if (imm > 0 && fits_in_n_bits(imm, bits)) {
-        fprintf(stderr, "\e[33mWARN: Value '%d' will be interpreted as signed value '%d'\n", imm, ~(imm >> 1));
+        fprintf(stderr, "\e[33mWARN: Value '%d' will be interpreted as signed value '%d'\e[0m\n", imm, ((imm << (32-bits)) >> (32-bits)));
         return true;
     }
 
