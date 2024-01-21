@@ -71,7 +71,7 @@
     X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = rs1 + offset; } while(0)) \
     \
     X_IMM2(ecall,   0b1110011, 0x0, 0x0, ecall()) \
-    X_IMM2(ebreak,   0b1110011, 0x0, 0x1, ebreak())
+    X_IMM2(ebreak,  0b1110011, 0x0, 0x1, ebreak())
 
 #define X_PSEUDO_INSTRS \
     X_PSEUDO(j,    0, 1,  { op_jal,  .as_jump = { .rd = 0, .offset = imms[0] }}) \
