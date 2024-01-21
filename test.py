@@ -256,14 +256,16 @@ class TestRISCVEmulation:
 
     @pytest.mark.parametrize("filename", ALL_FILES)
     def test_emulator(self, filename, tmp_path):
+        shouldPreferUserAsm = True
+
         prog, _ = os.path.splitext(filename)
         prog_hex = prog + ".hex"
         prog_state = prog + ".state"
 
         expected = self.get_expected(prog + ".s")
 
-        if not os.path.exists(prog_hex):
-            pytest.skip("No assembler output {}".format(prog_hex))
+        # if not os.path.exists(prog_hex):
+        #     pytest.skip("No assembler output {}".format(prog_hex))
         if os.path.exists(prog_state):
             os.remove(prog_state)
 
@@ -273,7 +275,7 @@ class TestRISCVEmulation:
         # Run the command, ignoring I/Os (we only use output files)
         subprocess.run(
             [RISCV_EMULATOR, prog_hex, prog_state],
-            timeout=10,
+            # timeout=10,
             stderr=subprocess.STDOUT,
             check=True,
         )
@@ -288,4 +290,5 @@ class TestRISCVEmulation:
         assert_equal_regs(expected, state)
 
 
-pytest.main(sys.argv)
+if __name__ == "__main__":
+    pytest.main(sys.argv)

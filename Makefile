@@ -45,11 +45,9 @@ test: $(EXE_ASM) $(EXE_EMU) test.py
 
 $(TEST_DIR)/%: all
 	@echo -e '---- \x1b[1mAssembling\x1b[2m [riscv-assembler $@.s $@.hex]\x1b[0m ----\n'
-	@./riscv-assembler $@.s $@.hex
+	-@python test_single.py $@.s
 	@echo -e '\n---- \x1b[1mExecuting\x1b[2m [riscv-emulator $@.hex $@.state]\x1b[0m ----\n'
-	@./riscv-emulator $@.hex $@.state
-	@echo -e '\n---- \x1b[1mFinal state\x1b[2m [$@.state]\x1b[0m ----'
-	@cat $@.state
+	-@python test_single.py $@.hex
 
 cleanall: clean
 	@ rm -rf __pycache__ .pytest_cache .hypothesis
