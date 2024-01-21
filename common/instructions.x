@@ -10,7 +10,7 @@
     INSTR(IMM, name, opcode, f3, or_mask, operation)
 
 #define X_LOAD(name, opcode, f3, type) \
-    INSTR(LOAD, name, opcode, f3, 0x0, rs1 = *(type*)mem(rs2 + imm))
+    INSTR(LOAD, name, opcode, f3, 0x0, rd = *(type*)mem(rs + imm))
 
 #define X_STORE(name, opcode, f3, type) \
     INSTR(STORE, name, opcode, f3, 0x0, *(type*)mem(rbase + offset) = (type)rval)
