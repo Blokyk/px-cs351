@@ -21,10 +21,11 @@ endif
 
 TEST_DIR := tests
 
-help:
+all: asm emu
+
+h help:
 	@echo "Targets: all, asm, emu test, tests/<test-name>, clean, cleanall, pack"
 
-all: asm emu
 asm: $(EXE_ASM)
 emu: $(EXE_EMU)
 
