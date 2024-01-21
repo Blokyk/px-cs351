@@ -1,5 +1,3 @@
-#define _GNU_SOURCE // for asprintf
-
 #include "parser.h"
 
 #include <assert.h>
