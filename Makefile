@@ -1,6 +1,6 @@
 AUTEURS := CourvoisierZoe
 
-DEFINES := _GNU_SOURCE
+DEFINES := DEBUG _GNU_SOURCE
 
 CC ?= gcc
 CFLAGS := -O0 -Wall -Wextra -g

@@ -51,6 +51,9 @@ int main(int argc, char **argv) {
     while (cpu.pc != ERROR_PC) {
         step(&cpu);
         dump_regs(&cpu);
+        #if DEBUG
+            getchar();
+        #endif
 
         // for (int i = 0; i < 31; i++) {
         //     char* fmt = i < 10 ? " x%d: %c\e[2m0x\e[0m%lx\n" : "x%d: %c\e[2m0x\e[0m%lx\n";
