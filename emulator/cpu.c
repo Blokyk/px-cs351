@@ -55,7 +55,7 @@ void step(cpu_t *cpu) {
     free(instr_str);
 
     regnum_t rd_num, rs1_num, rs2_num;
-    int32_t imm;
+    int64_t imm;
     switch (format_of(curr_instr.opname)) {
         case REG:
             rd_num = curr_instr.as_reg.rd;

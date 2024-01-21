@@ -40,8 +40,8 @@ bool has_unsigned_operand(opname_t opname) {
 }
 
 char* fmt_instr(instr_t instr) {
-    #define as_signed_bits(n, val) ((int64_t)((uint64_t)val << (64-n)) >> (64-n))
-    #define as_unsigned_bits(n, val) (((uint64_t)val << (64-n)) >> (64-n))
+    #define as_signed_bits(n, val) ((int32_t)((uint32_t)val << (32-n)) >> (32-n))
+    #define as_unsigned_bits(n, val) (((uint32_t)val << (32-n)) >> (32-n))
 
     const char * const opcode_str = fmt_opcode(instr.opname);
 
@@ -53,7 +53,7 @@ char* fmt_instr(instr_t instr) {
             break;
         case IMM:
             if (has_unsigned_operand(instr.opname))
-                asprintf(&out, "%-5s    x%d, x%d, %u", opcode_str, instr.as_imm.rd, instr.as_imm.rs, (uint64_t)as_unsigned_bits(12, instr.as_imm.operand));
+                asprintf(&out, "%-5s    x%d, x%d, %u", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_unsigned_bits(12, instr.as_imm.operand));
             else
                 asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
             break;
