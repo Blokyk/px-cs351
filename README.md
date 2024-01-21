@@ -111,17 +111,26 @@ Questions à remplir _avant_ de programmer l'émulateur (10 lignes sont conseill
 
 * Listez tous les éléments matériels auxquels vous pouvez penser dont l'émulateur doit reproduire le comportement, et déduisez-en une liste de toutes les tâches individuelles de l'émulateur.
 
-[COMPLÉTER ICI]
+On doit émuler les éléments matériel suivant:
+  - RAM / bus mémoire
+  - CPU
+    - décodeur
+    - table des registres
+    - APU
+
+On peut donc essayer de dresser une liste des tâches:
+  - créer et gérer un buffer pour émuler la RAM
+  - décoder les instructions
+  - gérer les registres (attention à `x0` et `sp!)
+  - implémenter les différentes opérations arithmétiques
 
 * Quelle fonction de la bibliothèque standard pouvez-vous utiliser pour lire les valeurs listées dans le fichier `.hex` sans vous casser la tête ? (Indice : ces valeurs ont été écrites avec `fprintf()`.)
 
-- fscanf in a loop (though you should [read this](https://sekrit.de/webdocs/c/beginners-guide-away-from-scanf.html)
-before+after impl)
-- fgets + strtoul(base: 16)
+L'option évident est `fscanf(hex_file, " %08x \n")` en boucle (à lire: [read this](https://sekrit.de/webdocs/c/beginners-guide-away-from-scanf.html) avant+après impl), ce qui est l'option "naturelle" étant donné que le fichier a normalement était crée en appellant `fprintf` en boucle.
 
 * Décrivez comment vous allez répartir les tâches de l'émulateur en différents fichiers, ou ne pas les répartir et tout faire dans le même fichier. Expliquez les avantages de votre choix.
 
-[COMPLÉTER ICI]
+On miroite la structure de l'assembleur : on a un fichier qui contient le décodeur, et un autre qui contient le "coeur d'exécution" : APU + gestionnaire de registres + gestionnaire de mémoire
 
 Questions à remplir _après_ avoir programmé l'émulateur :
 
@@ -147,7 +156,7 @@ comparaisons et sauts ? La mémoire ?
 
 [COMPLÉTER ICI]
 
-* Cochez (en remplaçant `[ ]` par `[x]`) si vous avez :**
+* Cochez (en remplaçant `[ ]` par `[x]`) si vous avez :
   - [ ] Implémenté l'émulation de toutes les instructions gérées par le rendu 2.
   - [ ] Implémenté l'émulation de toutes les instructions.
   - [ ] Tous vos tests qui passent.
