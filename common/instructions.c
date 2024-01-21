@@ -28,8 +28,20 @@ instr_format_t format_of(opname_t op) {
     }
 }
 
+bool has_unsigned_operand(opname_t opname) {
+    // if the instruction name ends with a 'u', then it definitely has an unsigned operand
+    switch (opname) {
+        #define INSTR(type, name, _0, _1, _2, _3) case _opname_of(name): return type == IMM && #name[sizeof(#name)-2] == 'u';
+            X_REAL_INSTRS
+        #undef INSTR
+        default:
+            return false;
+    }
+}
+
 char* fmt_instr(instr_t instr) {
-    #define as_signed_bits(n, val) ((int32_t)((uint32_t)val << (32-n)) >> (32-n))
+    #define as_signed_bits(n, val) ((int64_t)((uint64_t)val << (64-n)) >> (64-n))
+    #define as_unsigned_bits(n, val) (((uint64_t)val << (64-n)) >> (64-n))
 
     const char * const opcode_str = fmt_opcode(instr.opname);
 
@@ -40,13 +52,16 @@ char* fmt_instr(instr_t instr) {
             asprintf(&out, "%-5s    x%d, x%d, x%d", opcode_str, instr.as_reg.rd, instr.as_reg.rs1, instr.as_reg.rs2);
             break;
         case IMM:
-            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
+            if (has_unsigned_operand(instr.opname))
+                asprintf(&out, "%-5s    x%d, x%d, %u", opcode_str, instr.as_imm.rd, instr.as_imm.rs, (uint64_t)as_unsigned_bits(12, instr.as_imm.operand));
+            else
+                asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
             break;
         case LOAD:
-            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_imm.rd, instr.as_imm.operand, instr.as_imm.rs);
+            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_imm.rd, as_signed_bits(12, instr.as_imm.operand), instr.as_imm.rs);
             break;
         case STORE:
-            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, instr.as_store.offset, as_signed_bits(12, instr.as_store.rbase));
+            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, as_signed_bits(12, instr.as_store.offset), instr.as_store.rbase);
             break;
         case BRANCH:
             asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, as_signed_bits(13, instr.as_branch.offset));
