@@ -6,8 +6,8 @@
 #define X_IMM(name, opcode, f3, operation) \
     INSTR(IMM, name, opcode, f3, 0x0, operation)
 
-#define X_IMM2(name, opcode, f3, or_mask, operation) \
-    INSTR(IMM, name, opcode, f3, or_mask, operation)
+#define X_IMM2(name, opcode, f3, or_mask, f7_starting_bit, operation) \
+    INSTR(IMM, name, opcode, f3, (or_mask<<f7_starting_bit), operation)
 
 #define X_LOAD(name, opcode, f3, type) \
     INSTR(LOAD, name, opcode, f3, 0x0, rd = *(type*)mem(rs + imm))
@@ -43,9 +43,9 @@
     X_IMM(slti,     0b0010011, 0x2, rd = (rs1 < imm) ? 1 : 0) \
     X_IMM(sltiu,    0b0010011, 0x3, rd = ((uint64_t)rs1 < (uint64_t)imm) ? 1 : 0) \
     \
-    X_IMM2(slli,    0b0010011, 0x1, 0x00   , rd = rs & imm) \
-    X_IMM2(srli,    0b0010011, 0x5, 0x00   , rd = rs & imm) \
-    X_IMM2(srai,    0b0010011, 0x5, 0x20<<5, rd = rs & imm) \
+    X_IMM2(slli,    0b0010011, 0x1, 0x00, 5, rd = rs << imm) \
+    X_IMM2(srli,    0b0010011, 0x5, 0x00, 5, rd = (uint64_t)rs >> imm) \
+    X_IMM2(srai,    0b0010011, 0x5, 0x20, 5, rd = rs >> imm) \
     \
     X_LOAD(lb,      0b0000011, 0x0, int8_t) \
     X_LOAD(lh,      0b0000011, 0x1, int16_t) \
@@ -70,8 +70,8 @@
     X_JUMP(jal,     0b1101111) \
     X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = (rs1 + offset) & ~0b1 /* spec(p28): jalr clears lowest bit of address */; } while(0)) \
     \
-    X_IMM2(ecall,   0b1110011, 0x0, 0x0, ecall()) \
-    X_IMM2(ebreak,  0b1110011, 0x0, 0x1, ebreak())
+    X_IMM2(ecall,   0b1110011, 0x0, 0x0, 0, ecall()) \
+    X_IMM2(ebreak,  0b1110011, 0x0, 0x1, 0, ebreak())
 
 #define X_PSEUDO_INSTRS \
     X_PSEUDO(j,    0, 1,  { op_jal,  .as_jump = { .rd = 0, .offset = imms[0] }}) \
