@@ -78,6 +78,10 @@ void step(cpu_t *cpu) {
             rs2_num = curr_instr.as_branch.rs2;
             imm = curr_instr.as_branch.offset;
             break;
+        case UPPER:
+            rd_num = curr_instr.as_upper.rd;
+            imm = curr_instr.as_upper.operand;
+            break;
         case JUMP:
             rd_num = curr_instr.as_jump.rd;
             imm = curr_instr.as_jump.offset;

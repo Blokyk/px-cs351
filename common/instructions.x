@@ -18,6 +18,9 @@
 #define X_BRANCH(name, opcode, f3, condition) \
     INSTR(BRANCH, name, opcode, f3, 0x0, branch(condition))
 
+#define X_UPPER(name, opcode, code) \
+    INSTR(UPPER, name, opcode, 0x0, 0x0, code)
+
 #define X_JUMP(name, opcode) \
     INSTR(JUMP, name, opcode, 0x0, 0x0, do { rd = pc + 4; pc += offset; } while(0))
 
@@ -66,6 +69,9 @@
     X_BRANCH(bge,   0b1100011, 0x5, rs1 >= rs2) \
     X_BRANCH(bltu,  0b1100011, 0x6, (uint64_t)rs1 <  (uint64_t)rs2) \
     X_BRANCH(bgeu,  0b1100011, 0x7, (uint64_t)rs1 >= (uint64_t)rs2) \
+    \
+    X_UPPER(auipc,  0b0010111, rd = pc + (imm << 12)) \
+    X_UPPER(lui,    0b0110111, rd = imm << 12) \
     \
     X_JUMP(jal,     0b1101111) \
     X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = (rs1 + offset) & ~0b1 /* spec(p28): jalr clears lowest bit of address */; } while(0)) \

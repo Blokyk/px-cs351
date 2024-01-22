@@ -95,6 +95,7 @@ opname_t decode_opname(uint32_t raw_instr) {
 #define get_imm_i(val) sign_extend(get_bits(val, 20, 31), 11)
 #define get_imm_s(val) sign_extend((get_bits(val, 25, 31) << 5) | get_bits(val, 7, 11), 11)
 #define get_imm_sb(val) sign_extend((get_bit(val, 31) << 12) | (get_bits(val, 25, 30) << 5) | (get_bits(val, 8, 11) << 1) | (get_bit(val, 7) << 11), 12)
+#define get_imm_u(val) sign_extend(get_bits(val, 12, 31), 19)
 #define get_imm_uj(val) sign_extend((get_bit(val, 31) << 20) | (get_bits(val, 21, 30) << 1) | (get_bit(val, 20) << 11) | (get_bits(val, 12, 19) << 12), 20)
 
 instr_t decode(uint32_t raw_instr) {
@@ -132,6 +133,10 @@ instr_t decode(uint32_t raw_instr) {
             instr.as_branch.rs1 = get_rs1(raw_instr);
             instr.as_branch.rs2 = get_rs2(raw_instr);
             instr.as_branch.offset = get_imm_sb(raw_instr);
+            break;
+        case UPPER:
+            instr.as_upper.rd = get_rd(raw_instr);
+            instr.as_upper.operand = get_imm_u(raw_instr);
             break;
         case JUMP:
             instr.as_jump.rd = get_rd(raw_instr);

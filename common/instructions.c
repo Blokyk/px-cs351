@@ -68,6 +68,9 @@ char* fmt_instr(instr_t instr) {
         case BRANCH:
             ret_code = asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, as_signed_bits(13, instr.as_branch.offset));
             break;
+        case UPPER:
+            ret_code = asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_upper.rd, instr.as_upper.operand);
+            break;
         case JUMP:
             ret_code = asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, as_signed_bits(21, instr.as_jump.offset));
             break;

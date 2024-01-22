@@ -351,6 +351,8 @@ bool validate_instr(instr_t instr) {
         case BRANCH:
             return validate_imm(instr.as_branch.offset, 13)
                 && validate_code_offset(instr.as_branch.offset);
+        case UPPER:
+            return validate_imm(instr.as_upper.operand, 20);
         case JUMP:
             return validate_imm(instr.as_jump.offset, 21)
                 && validate_code_offset(instr.as_jump.offset);
@@ -418,6 +420,15 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
                 return false;
 
             if (!try_parse_imm(&src_code, &(instr->as_branch.offset)))
+                return false;
+
+            break;
+        }
+        case UPPER: {
+            if (!try_parse_reg(&src_code, &(instr->as_upper.rd)))
+                return false;
+
+            if (!try_parse_imm(&src_code, &(instr->as_upper.operand)))
                 return false;
 
             break;

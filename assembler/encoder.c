@@ -85,6 +85,15 @@ uint32_t encode(instr_t instr) {
                 | (b12 << 31)
             );
         }
+        case UPPER: {
+            regnum_t rd = instr.as_upper.rd;
+            uint32_t operand = instr.as_upper.operand;
+
+            return (uint32_t)(opcode
+                | (rd << 7)
+                | (operand << 12)
+            );
+        }
         case JUMP: {
             regnum_t rd = instr.as_jump.rd;
 

@@ -27,6 +27,9 @@ bne x2, x3, 4
 blt x4, x5, -0b11111111110 # right at the limit
 bge x6, x7, 0
 
+auipc t4, 0x3
+lui x29, 48
+
 jal x2, -0x100000
 jal x2, 0xffffe
 jal x31, -0xabcde
