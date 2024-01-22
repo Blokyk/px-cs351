@@ -47,35 +47,42 @@ char* fmt_instr(instr_t instr) {
 
     char *out;
 
+    int ret_code = 0;
+
     switch(format_of(instr.opname)) {
         case REG:
-            asprintf(&out, "%-5s    x%d, x%d, x%d", opcode_str, instr.as_reg.rd, instr.as_reg.rs1, instr.as_reg.rs2);
+            ret_code = asprintf(&out, "%-5s    x%d, x%d, x%d", opcode_str, instr.as_reg.rd, instr.as_reg.rs1, instr.as_reg.rs2);
             break;
         case IMM:
             if (has_unsigned_operand(instr.opname))
-                asprintf(&out, "%-5s    x%d, x%d, %u", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_unsigned_bits(12, instr.as_imm.operand));
+                ret_code = asprintf(&out, "%-5s    x%d, x%d, %u", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_unsigned_bits(12, instr.as_imm.operand));
             else
-                asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
+                ret_code = asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_imm.rd, instr.as_imm.rs, as_signed_bits(12, instr.as_imm.operand));
             break;
         case LOAD:
-            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_imm.rd, as_signed_bits(12, instr.as_imm.operand), instr.as_imm.rs);
+            ret_code = asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_imm.rd, as_signed_bits(12, instr.as_imm.operand), instr.as_imm.rs);
             break;
         case STORE:
-            asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, as_signed_bits(12, instr.as_store.offset), instr.as_store.rbase);
+            ret_code = asprintf(&out, "%-5s    x%d, %d(x%d)", opcode_str, instr.as_store.rval, as_signed_bits(12, instr.as_store.offset), instr.as_store.rbase);
             break;
         case BRANCH:
-            asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, as_signed_bits(13, instr.as_branch.offset));
+            ret_code = asprintf(&out, "%-5s    x%d, x%d, %d", opcode_str, instr.as_branch.rs1, instr.as_branch.rs2, as_signed_bits(13, instr.as_branch.offset));
             break;
         case JUMP:
-            asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, as_signed_bits(21, instr.as_jump.offset));
+            ret_code = asprintf(&out, "%-5s    x%d, %d", opcode_str, instr.as_jump.rd, as_signed_bits(21, instr.as_jump.offset));
             break;
         case PSEUDO:
             fprintf(stderr, "WARN: Printing of pseudo-instructions isn't supported.\n");
-            asprintf(&out, "<pseudo:%s>", opcode_str);
+            ret_code = asprintf(&out, "<pseudo:%s>", opcode_str);
             break;
         default:
-            asprintf(&out, "<0x%x>", instr.opname);
+            ret_code = asprintf(&out, "<0x%x>", instr.opname);
             break;
+    }
+
+    if (ret_code == -1) {
+        fprintf(stderr, "FATAL: error occurred while printing instruction (asprintf returned -1)\n");
+        exit(1);
     }
 
     return out;
