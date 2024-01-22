@@ -264,8 +264,8 @@ class TestRISCVEmulation:
 
         expected = self.get_expected(prog + ".s")
 
-        # if not os.path.exists(prog_hex):
-        #     pytest.skip("No assembler output {}".format(prog_hex))
+        if not os.path.exists(prog_hex):
+            pytest.skip("No assembler output {}".format(prog_hex))
         if os.path.exists(prog_state):
             os.remove(prog_state)
 

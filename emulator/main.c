@@ -61,8 +61,6 @@ int main(int argc, char **argv) {
         // }
     }
 
-    // dump_regs(&cpu);
-
     for (int i = 0; i < 32; i++) {
         fprintf(emu_output_file, "x%d: %ld\n", i, cpu.regs[i]);
     }
