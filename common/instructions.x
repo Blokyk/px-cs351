@@ -30,9 +30,9 @@
     X_REG(xor,      0b0110011, 0x4, 0x00, rd = rs1 ^ rs2) \
     X_REG(or,       0b0110011, 0x6, 0x00, rd = rs1 | rs2) \
     X_REG(and,      0b0110011, 0x7, 0x00, rd = rs1 & rs2) \
-    X_REG(sll,      0b0110011, 0x1, 0x00, rd = rs1 << rs2) \
-    X_REG(srl,      0b0110011, 0x5, 0x00, rd = (uint64_t)rs1 >> rs2) \
-    X_REG(sra,      0b0110011, 0x5, 0x20, rd = rs1 >> rs2) \
+    X_REG(sll,      0b0110011, 0x1, 0x00, rd = rs1 << (rs2 & 0b11111)) \
+    X_REG(srl,      0b0110011, 0x5, 0x00, rd = (uint64_t)rs1 >> (rs2 & 0b11111)) \
+    X_REG(sra,      0b0110011, 0x5, 0x20, rd = rs1 >> (rs2 & 0b11111)) \
     X_REG(slt,      0b0110011, 0x2, 0x00, rd = (rs1 < rs2) ? 1 : 0) \
     X_REG(sltu,     0b0110011, 0x3, 0x00, rd = ((uint64_t)rs1 < (uint64_t)rs2) ? 1 : 0) \
     \
