@@ -132,9 +132,22 @@ void step(cpu_t *cpu) {
 
     cpu->regs[0] = 0;
 
-    // we only want to advance $pc if we didn't branch or jump
-    if (cpu->pc == old_pc)
+    if (cpu->pc != old_pc) {
+        // check PC is still 4-byte aligned
+        if ((cpu->pc & 0b11) != 0) {
+            char *instr_str = fmt_instr(curr_instr);
+            fprintf(
+                stderr,
+                "\e[31mMisaligned PC after executing '%s'. Target addresses for jumps and branches must be aligned to 4 bytes.\n",
+                instr_str
+            );
+            free(instr_str);
+            return;
+        }
+    } else {
+        // we only want to advance $pc if we didn't branch or jump
         cpu->pc += 4;
+    }
 }
 
 void dump_regs(cpu_t *cpu) {
