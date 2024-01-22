@@ -68,7 +68,7 @@
     X_BRANCH(bgeu,  0b1100011, 0x7, (uint64_t)rs1 >= (uint64_t)rs2) \
     \
     X_JUMP(jal,     0b1101111) \
-    X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = rs1 + offset; } while(0)) \
+    X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = (rs1 + offset) & ~0b1 /* spec(p28): jalr clears lowest bit of address */; } while(0)) \
     \
     X_IMM2(ecall,   0b1110011, 0x0, 0x0, ecall()) \
     X_IMM2(ebreak,  0b1110011, 0x0, 0x1, ebreak())
