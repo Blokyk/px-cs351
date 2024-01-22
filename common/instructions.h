@@ -42,9 +42,9 @@ typedef struct {
     };
 } instr_t;
 
-#define opcode_of(opname) ((opname) & 0b1111111)
-#define f3_of(opname) ((unsigned)(opname & 0b1110000000) >> 7)
-#define f7_of(opname) ((unsigned)(opname & 0b11111110000000000) >> 10)
+#define opcode_of(opname) (unsigned)((opname) & 0b1111111)
+#define f3_of(opname)     ((unsigned)((opname) &  0b1110000000) >> 7)
+#define f7_of(opname)     ((unsigned)((opname) & ~0b1111111111) >> 10)
 
 instr_format_t format_of(opname_t op);
 const char* fmt_opcode(opname_t op);
