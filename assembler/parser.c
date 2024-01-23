@@ -385,6 +385,11 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
             break;
         }
         case IMM: {
+            // jalr is supposed to have the 'jalr x1, 2(x3)' syntax, so just jump
+            // to the LOAD case, which supports that syntax for I-type instructions
+            if (instr->opname == op_jalr)
+                goto or_jalr;
+
             if (!try_parse_reg(&src_code, &(instr->as_imm.rd)))
                 return false;
             if (!try_parse_reg(&src_code, &(instr->as_imm.rs)))
@@ -394,7 +399,7 @@ bool try_parse_single_instr(span_t src_code, instr_t *instr) {
 
             break;
         }
-        case LOAD: {
+        case LOAD: or_jalr: {
             if (!try_parse_reg(&src_code, &(instr->as_imm.rd)))
                 return false;
 
