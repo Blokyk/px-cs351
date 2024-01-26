@@ -146,6 +146,7 @@ documentation fournie ? Si non, quels sont les points obscurs ?
 * Quels exemples de programmes avez-vous choisi pour tester le calcul ? Les
 comparaisons et sauts ? La mémoire ?
 
+todo: trouver une façon de tester que les jumps infinis fonctionnent correctement (e.g. n'avancent pas tous seuls)
 [COMPLÉTER ICI]
 
 * Reste-t-il des bugs que vous avez découverts et pas corrigés ?

@@ -22,7 +22,7 @@
     INSTR(UPPER, name, opcode, 0x0, 0x0, code)
 
 #define X_JUMP(name, opcode) \
-    INSTR(JUMP, name, opcode, 0x0, 0x0, do { rd = pc + 4; pc += offset; } while(0))
+    INSTR(JUMP, name, opcode, 0x0, 0x0, do { rd = get_pc() + 4; set_pc(get_pc() + offset); } while(0))
 
 #define X_PSEUDO(name, reg_count, imm_count, ...) \
     P_INSTR(name, reg_count, imm_count, ((instr_t)__VA_ARGS__))
@@ -70,11 +70,11 @@
     X_BRANCH(bltu,  0b1100011, 0x6, (uint64_t)rs1 <  (uint64_t)rs2) \
     X_BRANCH(bgeu,  0b1100011, 0x7, (uint64_t)rs1 >= (uint64_t)rs2) \
     \
-    X_UPPER(auipc,  0b0010111, rd = pc + (imm << 12)) \
+    X_UPPER(auipc,  0b0010111, rd = get_pc() + (imm << 12)) \
     X_UPPER(lui,    0b0110111, rd = imm << 12) \
     \
     X_JUMP(jal,     0b1101111) \
-    X_IMM(jalr,     0b1100111, 0x0, do { rd = pc + 4; pc = (rs1 + offset) & ~0b1 /* spec(p28): jalr clears lowest bit of address */; } while(0)) \
+    X_IMM(jalr,     0b1100111, 0x0, do { rd = get_pc() + 4; set_pc((rs1 + offset) & ~0b1); /* spec(v2.2-p28): jalr clears lowest bit of address */ } while(0)) \
     \
     X_IMM2(ecall,   0b1110011, 0x0, 0x0, 0, ecall()) \
     X_IMM2(ebreak,  0b1110011, 0x0, 0x1, 0, ebreak())

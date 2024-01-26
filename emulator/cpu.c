@@ -36,10 +36,7 @@ void step(cpu_t *cpu) {
         return;
 
     uint32_t raw_instr = *raw_instr_ptr;
-
     instr_t curr_instr = decode(raw_instr);
-
-    size_t old_pc = cpu->pc;
 
     if (curr_instr.opname == op_err) {
         // we use 0x0 as a "marker" instr, so we don't want an error in that case
@@ -91,11 +88,14 @@ void step(cpu_t *cpu) {
             exit(1);
     }
 
-    // used in the "pseudo-code" in instr def
-    #define pc cpu->pc
-    #define regs(num) cpu->regs[num]
+    bool pc_changed = false;
+
+    // here, we define the notation used in the "pseudo-code" defining instructions in instructions.x
+    #define set_pc(val) do { cpu->pc = val; pc_changed = true; } while(0)
+    #define get_pc() ((const uint64_t)(cpu->pc))
+    #define regs(num) (cpu->regs[num])
     #define mem(offset) ({ uint8_t *addr = try_access_mem(cpu, offset); if (addr == NULL) return; addr; })
-    #define branch(condition) pc += (condition) ? (offset) : 0
+    #define branch(condition) do { if (condition) set_pc(get_pc() + (offset)); } while(0)
     #define ecall() env_call(cpu)
     #define ebreak() env_break(cpu)
 
@@ -136,7 +136,12 @@ void step(cpu_t *cpu) {
 
     cpu->regs[0] = 0;
 
-    if (cpu->pc != old_pc) {
+    // most instructions don't modify PC by themselves and just
+    // need it advance by 4 bytes; however, branches and jumps
+    // manage it manually, but we need to ensure PC is still
+    // aligned to 4-byte as required by the spec (since we
+    // don't implement rv64c)
+    if (pc_changed) {
         // check PC is still 4-byte aligned
         if ((cpu->pc & 0b11) != 0) {
             char *instr_str = fmt_instr(curr_instr);
