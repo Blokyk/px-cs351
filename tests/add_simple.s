@@ -3,7 +3,7 @@ addi a2, zero, 22
 add a0, a1, a2
 
 # EXPECTED
-# sp: -
+# sp: 0x4000
 # a0: 2
 # a1: -20
 # a2: 22
