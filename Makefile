@@ -1,6 +1,5 @@
 AUTEURS := CourvoisierZoe
 
-DEFINES ?= DEBUG
 DEFINES += _GNU_SOURCE
 
 CC ?= gcc
