@@ -126,7 +126,7 @@ On peut donc essayer de dresser une liste des tâches:
 
 * Quelle fonction de la bibliothèque standard pouvez-vous utiliser pour lire les valeurs listées dans le fichier `.hex` sans vous casser la tête ? (Indice : ces valeurs ont été écrites avec `fprintf()`.)
 
-L'option évident est `fscanf(hex_file, " %08x \n")` en boucle (à lire: [read this](https://sekrit.de/webdocs/c/beginners-guide-away-from-scanf.html) avant+après impl), ce qui est l'option "naturelle" étant donné que le fichier a normalement était crée en appellant `fprintf` en boucle.
+L'option évidente est `fscanf(hex_file, " %08x \n")` en boucle ([à lire avant+après impl](https://sekrit.de/webdocs/c/beginners-guide-away-from-scanf.html)), ce qui est l'option "naturelle" étant donné que le fichier a normalement été crée en appellant `fprintf` en boucle.
 
 * Décrivez comment vous allez répartir les tâches de l'émulateur en différents fichiers, ou ne pas les répartir et tout faire dans le même fichier. Expliquez les avantages de votre choix.
 
@@ -136,22 +136,40 @@ Questions à remplir _après_ avoir programmé l'émulateur :
 
 * Aviez-vous réussi à listé toutes les tâches dans la première question ? Rétrospectivement, y a-t-il des tâches dont vous aviez sous-estimé ou sur-estimé la complexité ?
 
-[COMPLÉTER ICI]
+Avec notre architecture les tâches étaient assez compartimentées. Le décodeur a été la source principale de bugs, mais ce n'était pas difficile à prévoir étant donné que c'est que de la manipulation de bits, qui est connue pour être généralement error-prone.
 
 * Avez-vous compris le fonctionnement de chaque instruction à partir de la
 documentation fournie ? Si non, quels sont les points obscurs ?
 
-[COMPLÉTER ICI]
+Oui, même si pour certaines il a fallut croiser les sources (spec, github issues, slides d'autres cours, assembler user manual, etc.) car on pouvait trouver des infos contradictoires.
 
 * Quels exemples de programmes avez-vous choisi pour tester le calcul ? Les
 comparaisons et sauts ? La mémoire ?
 
-todo: trouver une façon de tester que les jumps infinis fonctionnent correctement (e.g. n'avancent pas tous seuls)
-[COMPLÉTER ICI]
+Quelques tests ont été écrits et testés à la main, pour tester des scénarios précis (e.g. `overflow.s`), ou alors pour s'assurer du fonctionnement d'un programme typique (e.g. `calc.s`).
+
+Cependant, un corpus de tests fut généré aléatoirement en utilisant un émulateur de référence. Celui-ci produisait d'abord du code pour charger quelques valeurs dans des registres, puis générait un ensemble d'instructions aléatoirement[^1] et tentait de les exécuter sur l'émulateur de référence. Si cela produit un crash, alors on régénère un nouvel l'ensemble, on ré-initialise l'émulateur et on réessaye[^2]; sinon, on sauvegarde les instructions  dans un fichier, avec l'état final des registres du simulateur (de façon à ce qu'il soit compris par le harnais de test). Ceci a permis de déceler quelques bugs dans notre émulateur pour des cas assez ésotériques auxquelles nous n'avions pas pensé.
+
+[^1]: La distribution des types d'instructions n'étaient pas uniforme, et a été établie à la main, pour essayer d'équilibrer couverture des tests et vraisemblance à un programme typique
+  - R-type: 25%
+  - I-type (arithmétique): 30%
+  - I-type (loads): 10%
+  - I-type (jalr): 4%
+  - S-type: 10%
+  - SB-type: 10%
+  - U-type: 5%
+  - J-type: 6%
+
+[^2]: Cette méthode de "brute-force" est assez inefficace en terme de temps, et est biaisé en faveur des instructions moins "dangereuses," telles que les
+      opérations registre-registre ou arithmétiques. On pourrait imaginer à la place sélectionner une seule instruction à la fois, tenter de l'exécuter, puis si l'émulateur a crashé, on choisit une nouvelle instruction et on réessaie jusqu'à ce que ça fonctionne. On concatène ensuite une nouvelle instruction et on applique la même processus. Ainsi, on ne "jette" qu'une seule instruction à la fois, et on évite de se trouver dans un scénario où on a 49 instructions valides déjà générées mais la 50e ne l'est pas et on est forcés de tout recommencer à zéro. Cette technique réduirait *énormément* le temps nécessaire pour générer des instructions valides, d'abord car nous ne serions plus sujet à l'exponentialité de la méthode originelle, mais aussi car elle se prête particulièrement bien à un modèle d'exécution spéculative et par étape, là ou le générateur actuel doit créer une nouvelle CPU et réinitialiser sa mémoire à chaque fois, ce qui a un impact non-négligeable étant donné la lenteur de sa convergence (par ex. s'il faut 1500 générations pour générer 30 instructions valides, il faudra aussi initialiser la mémoire 1500 fois).
+
+      Cependant, cette technique n'est pas si facile à implémenter que ça, car il faut pouvoir suivre l'évolution de la CPU, comme les accès mémoire ou la valeur du PC, pour pouvoir s'assurer qu'on exécute bien les instructions que l'on a générer (et non pas), et que l'environment dans lequel s'exécute les premières instructions est toujours cohérents une fois les instructions finales choisies. Par exemple, que faire lorsqu'on charge la partie de la mémoire où son stockées les instructions? Puisqu'on n'a pas encore décider de leur valeurs, l'état actuel de la CPU devient dépendant des instructions futures, qui elles dépendent de l'état actuel et futur. Il y a bien sûr des solutions aux problèmes introduit par cette génération incrémentale (e.g. garder une liste des accès mémoire créant des dépendances aux instructions futures et démarrer l'exécution à ces points-ci lorsqu'on génère de nouvelles instructions), mais notre budget temps s'est resserré pendant la finalisation de ce projet, et nous avons préférer perdre quelques millisecondes à utiliser une méthode brute-force simple, plutôt que de passer du temps à s'assurer du bon fonctionnement d'un système aussi complexe.
+
+todo: trouver une façon de tester que les jumps infinis (i.e. `j 0`) fonctionnent correctement (e.g. n'avancent pas tous seuls)
 
 * Reste-t-il des bugs que vous avez découverts et pas corrigés ?
 
-[COMPLÉTER ICI]
+Pas que je m'en souvienne.
 
 * D'autres remarques sur votre programme ?
 
