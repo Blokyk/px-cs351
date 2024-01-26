@@ -38,7 +38,7 @@ typedef struct {
         struct { regnum_t rs1; regnum_t rs2; int32_t offset; } as_branch;
         struct { regnum_t rd; int32_t operand; } as_upper;
         struct { regnum_t rd; int32_t offset; } as_jump;
-        int32_t err_code;
+        struct { uint32_t raw_instr; int32_t err_code; } as_error;
     };
 } instr_t;
 

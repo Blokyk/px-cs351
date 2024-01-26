@@ -496,7 +496,7 @@ instr_t parse_line(const char* src_line, size_t length, int line_number) {
 
     // if the line is empty after cleanup
     if (line_span.length == 0)
-        return (instr_t){ .opname = op_err, .err_code = EMPTY_PARSE };
+        return (instr_t){ .opname = op_err, .as_error.err_code = EMPTY_PARSE };
 
     instr_t instr;
     if (!try_parse_single_instr(line_span, &instr)) {
@@ -510,7 +510,7 @@ instr_t parse_line(const char* src_line, size_t length, int line_number) {
             free(instr_str);
         }
 
-        return (instr_t){ .opname = op_err, .err_code = ERROR_PARSE };
+        return (instr_t){ .opname = op_err, .as_error.err_code = ERROR_PARSE };
     }
 
     return instr;

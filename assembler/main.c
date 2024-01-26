@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
             printf("%-35s    -> %08x\n", instr_str, encode(instr));
             fprintf(hex_output_file, "%08x\n", encode(instr));
             free(instr_str);
-        } else if (instr.err_code == EMPTY_PARSE) {
+        } else if (instr.as_error.err_code == EMPTY_PARSE) {
             printf("\e[2m%.*s\e[0m\n", (int)n, line);
         } else {
             printf("\e[31m%.*s\e[0m\n", (int)n, line);

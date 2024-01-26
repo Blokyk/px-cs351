@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils.h"
+
 const char* fmt_opcode(opname_t op) {
     switch (op) {
         #define INSTR(_0, name, _1, _2, _3, _4) case _opname_of(name): return #name;
@@ -78,14 +80,37 @@ char* fmt_instr(instr_t instr) {
             fprintf(stderr, "WARN: Printing of pseudo-instructions isn't supported.\n");
             ret_code = asprintf(&out, "<pseudo:%s>", opcode_str);
             break;
+        case ERROR_FMT:
+            if (instr.as_error.err_code != 0) {
+                ret_code = asprintf(&out, "<error:%d>", instr.as_error.err_code);
+            } else if (instr.as_error.raw_instr != 0) {
+                uint32_t raw_instr = instr.as_error.raw_instr;
+                ret_code = asprintf(
+                    &out,
+                    "<0x%02x 0x%02x 0x%02x 0x%02x>",
+                    get_bits(raw_instr, 0, 7),
+                    get_bits(raw_instr, 8, 15),
+                    get_bits(raw_instr, 16, 23),
+                    get_bits(raw_instr, 24, 31)
+                );
+            } else {
+                ret_code = asprintf(&out, "<null instr>");
+            }
+            break;
         default:
-            ret_code = asprintf(&out, "<0x%x>", instr.opname);
+            fprintf(
+                stderr,
+                "Unknown instruction format (%d) for opname %s\n",
+                format_of(instr.opname),
+                opcode_str
+            );
+            abort();
             break;
     }
 
     if (ret_code == -1) {
         fprintf(stderr, "FATAL: error occurred while printing instruction (asprintf returned -1)\n");
-        exit(1);
+        abort();
     }
 
     return out;
