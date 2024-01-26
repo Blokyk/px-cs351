@@ -275,7 +275,7 @@ class TestRISCVEmulation:
         # Run the command, ignoring I/Os (we only use output files)
         subprocess.run(
             [RISCV_EMULATOR, prog_hex, prog_state],
-            # timeout=10,
+            timeout=10,
             stderr=subprocess.STDOUT,
             check=True,
         )
