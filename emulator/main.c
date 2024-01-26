@@ -38,8 +38,12 @@ int main(int argc, char **argv) {
     while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) == 1) {
         i++;
 
-        // check after increment because scanf writes directly based on `i` during the loop's check
-        if (i == mem_size) {
+        // if there's too many instructions for the current memory size, double it
+        //
+        // we check after incrementing since at that point, `i` will
+        // be 1+idx_of_last_parsed_instr, i.e. the number of valid
+        // instructions that were parsed
+        if (i*4 == mem_size) {
             mem_size *= 2;
             memory = realloc(memory, mem_size);
             bzero(memory + mem_size/2, mem_size/2);
