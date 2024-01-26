@@ -154,14 +154,14 @@ comparaisons et sauts ? La mémoire ?
 
 * D'autres remarques sur votre programme ?
 
-[COMPLÉTER ICI]
+J'ai pas eu le temps de faire tourner DOOM :,(
 
 * Cochez (en remplaçant `[ ]` par `[x]`) si vous avez :
-  - [ ] Implémenté l'émulation de toutes les instructions gérées par le rendu 2.
-  - [ ] Implémenté l'émulation de toutes les instructions.
-  - [ ] Tous vos tests qui passent.
-  - [ ] Vérifié que vous tests couvrent toutes les instructions émulées.
-  - [ ] Testé les cas particuliers : valeurs négatives, overflows...
+  - [x] Implémenté l'émulation de toutes les instructions gérées par le rendu 2.
+  - [x] Implémenté l'émulation de toutes les instructions.
+  - [x] Tous vos tests qui passent.
+  - [x] Vérifié que vous tests couvrent toutes les instructions émulées.
+  - [x] Testé les cas particuliers : valeurs négatives, overflows...
   - [ ] Testé les cas d'erreur : division par zéro, sauts invalides... _(pas demandé par le sujet)_
   - [ ] Un port fonctionnel de DOOM pour votre émulateur.
 
