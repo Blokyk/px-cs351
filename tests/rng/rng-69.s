@@ -1,52 +1,56 @@
-# Seed: 1569092533
+# Seed: 922776018
 
-# Generation 64
+# Generation 270
 
 # == filling regs ==
-addi     s4,   x0, 0x23
-addi    s10,   x0, 0x117
-addi     t3,   x0, 0x37
-addi     s0,   x0, 0x2a
-addi     t4,   x0, 0x7f9
+addi   s0, x0, 0x2a
+addi   s6, x0, 0x7d3
+addi   t4, x0, 0x5
+addi   t1, x0, 0x57
+addi   a6, x0, 0x7e1
 
 # == code ==
-slli     x0,   s6, 0x0
-bge     s11,   t3, -0xc64 # (0xfffff39c)
-bne      t3,   s9, 0x8
-srli     a7,  s10, 0x19
-srli    s10,   s8, 0x13
-sh       s0, 2012(t2)
-sd       s0, 2046(a4)
-add      s6,   s1,   t5
-sltu     tp,   s4,   s2
-or       ra,   a7,   a3
-beq      s0,   s4, -0x2c # (0xffffffd4)
-sub      a3,   t5,  s11
-bltu     a2,   t2, 0xb40
-sltu     tp,   a5,   a3
-sra      a6,   s6,   s4
-or       s1,  s10,   a0
-slt      x0,   a0,   ra
-bltu     s9,   s3, -0x78c # (0xfffff874)
-sh       a1, 1989(t2)
-ori      s3,  s10, 0x7b6
-sw       s2, 2000(ra)
-sb       tp, 2007(t1)
-sw       a3, 2043(s3)
-slli    s10,   s6, 0x1f
-bne      s9,   s8, 0xcac
-lh       a0, 1374(t0)
-srl      t0,   t4,   t6
-srai     a3,   s3, 0x1c
-ori      t5,   s3, 0x18
-slt      ra,   s4,   a3
+bltu   s8, tp, -0xadc # (0xfffff524)
+sb     s9, 1997(ra)
+and    s8, s5, t3
+lwu    t1, 2024(t5)
+sll    a4, a4, t4
+srai   s8, a7, 0x5
+lui    s7, 0xf50c2
+ori    gp, s1, 0x52d
+sltu   s3, s7, gp
+xor    s9, s7, t1
+sb     a6, 162(a6)
+xor    sp, ra, s10
+and    gp, ra, s2
+sh     t0, 36(tp)
+sll    tp, s10, s3
+add    sp, x0, a6
+addi   t5, s9, 0x7f7
+lhu    s11, 63(t1)
+xor    t3, a3, s2
+slt    x0, tp, a5
+xori   s3, a2, 0x44
+lw     a2, 127(t4)
+srai   a1, a5, 0x14
+xor    a7, gp, s5
+addi   s6, t5, 0x20
+sltu   t0, s4, t3
+slti   s0, tp, 0x79f
+and    s2, s5, s5
+ld     t0, 1834(a3)
+slti   t1, s5, 0x7c9
 
 # EXPECTED
-# x2: 0x4000
-# x5: 0x7f9
-# x8: 0x2a
-# x19: 0x7b6
-# x20: 0x23
-# x28: 0x37
-# x29: 0x7f9
-# x30: 0x7be
+# x2: 0x7e1
+# x6: 0x1
+# x8: 0x1
+# x12: 0x72a6b283
+# x16: 0x7e1
+# x19: 0x44
+# x22: -0xaf3d7e9
+# x23: -0xaf3e000
+# x25: -0xaf3e000
+# x27: 0x330b
+# x29: 0x5
+# x30: -0xaf3d809

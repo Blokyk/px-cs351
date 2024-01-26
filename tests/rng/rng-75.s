@@ -1,53 +1,54 @@
-# Seed: 1836653730
+# Seed: 1375985729
 
-# Generation 100
+# Generation 234
 
 # == filling regs ==
-addi     ra,   x0, 0x263
-addi     t0,   x0, 0x38
-addi     x0,   x0, 0x3b
-addi     sp,   x0, 0x7fe
-addi     x0,   x0, 0x7b8
+addi   a4, x0, 0x412
+addi   s3, x0, 0x10
+addi   s7, x0, 0x7c6
+addi   a5, x0, 0x7aa
+addi   s3, x0, 0x7cf
 
 # == code ==
-lb       s8, 771(s5)
-sltiu    a7,   s0, 0x506
-srai     s7,   a4, 0x1a
-ori      a7,   a4, 0x0
-addi     s1,   ra, 0x35
-addi     t6,   s4, 0x7c7
-srl      x0,   s7,   ra
-bne      s9,   x0, -0xc # (0xfffffff4)
-sh       s6, 15(a0)
-xori     gp,  s11, 0x29
-bltu     s4,   a3, -0x10 # (0xfffffff0)
-ori      s5,   t5, 0x7e3
-slli     sp,  s11, 0xe
-bne      a2,   t5, -0x34 # (0xffffffcc)
-srl      s4,   a1,   a5
-slt      a6,   s1,   sp
-xori    s11,   a5, 0x5e
-lh       x0, 40(s4)
-srai     t0,   a7, 0x1
-addi     s1,   t2, 0x5e
-lwu      t6, 1652(a2)
-andi     t6,   x0, 0x34
-sb       sp, 2015(t5)
-sd       a0, 44(t5)
-slt      t3,   a2,   s1
-addi     tp,   a2, 0x7d8
-addi     a6,   t1, 0x7db
-sll      t5,   a6,   a1
-sub      sp,   a4,   s6
-lw       t4, 1984(s6)
+lbu    s1, 40(a7)
+addi   t3, s7, 0x7f8
+blt    tp, s8, -0x38 # (0xffffffc8)
+slli   x0, t1, 0x3
+lh     s3, 1174(ra)
+add    x0, t6, t1
+ori    s7, t5, 0x46e
+addi   a5, a0, 0x7f9
+srli   a4, t0, 0x3
+xor    t3, t1, t0
+sub    s8, s3, t5
+xori   a0, sp, 0x7c4
+slli   gp, s7, 0x16
+sd     a7, 28(s3)
+srl    a0, s3, s5
+lh     a1, 1982(s0)
+xor    t0, tp, s6
+sltiu  a1, a1, 0x699
+sltiu  a0, tp, 0x382
+ori    s7, gp, 0x23
+sd     a1, 5(t2)
+lbu    t4, 1691(t0)
+sw     s10, 1298(a4)
+sub    s9, a3, s3
+sd     a3, 1572(a4)
+srl    a2, s8, a6
+xori   t3, s5, 0x678
+xor    s9, gp, s0
+slli   s5, s7, 0x4
+lui    sp, 0x21
 
 # EXPECTED
-# x1: 0x263
-# x3: 0x29
-# x4: 0x7d8
-# x9: 0x5e
-# x16: 0x7db
-# x21: 0x7e3
-# x27: 0x5e
-# x28: 0x1
-# x30: 0x7db
+# x2: 0x21000
+# x3: 0x11b800000
+# x9: 0x33
+# x10: 0x1
+# x11: 0x1
+# x15: 0x7f9
+# x21: 0x11b8000230
+# x23: 0x11b800023
+# x25: 0x11b800000
+# x28: 0x678

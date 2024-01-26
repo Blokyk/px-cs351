@@ -1,53 +1,53 @@
-# Seed: 416214797
+# Seed: 847579520
 
-# Generation 52
+# Generation 36
 
 # == filling regs ==
-addi     t0,   x0, 0x18
-addi     a5,   x0, 0x7de
-addi     x0,   x0, 0x4
-addi     a6,   x0, 0x59
-addi     s3,   x0, 0x138
+addi   t2, x0, 0x11
+addi   t2, x0, 0x7bf
+addi   s5, x0, 0x54
+addi   t2, x0, 0x1e
+addi   s2, x0, 0x60
 
 # == code ==
-auipc    tp, 0x4e
-lui      s0, 0xffff3
-srai     a5,   s8, 0x1e
-xor      t5,   a3,   s9
-sb       s4, 525(t1)
-addi     t6,   t5, 0x7ba
-srl      sp,   a1,   t3
-xor      a0,   s4,   s6
-and      a3,   s7,  s10
-srai     a6,  s10, 0x1c
-sra     s10,   s5,   tp
-sra      a7,   s9,   t5
-add      a7,   a5,   s3
-slti     t3,   a7, 0x414
-sra      s2,  s10,   s7
-sltu     t4,   tp,   a0
-xori     ra,   a5, 0x59
-slt      t6,   t2,   s4
-xori     t1,  s11, 0x7f2
-srai     s4,   t4, 0x1d
-addi     ra,   s8, 0x4
-srai     s4,   s5, 0x1d
-jal      tp, 0x8
-jalr     s2, 81(s1)
-sd       s2, 1456(a3)
-lui      t5, 0xa7688
-xor      s8,   s6,  s10
-sltu     s7,   s2,  s10
-sd       t1, 1969(t2)
-sw       a5, 2043(s2)
+sltiu  gp, t0, 0x237
+add    s2, s4, a7
+auipc  s8, 0x3c
+lh     a1, 1975(s7)
+sll    t1, a3, a3
+lw     s1, 1949(x0)
+and    s9, gp, a2
+lhu    s6, 60(s1)
+and    s11, a6, s7
+srl    s2, s11, a3
+sltiu  s10, s4, 0x1b
+auipc  tp, 0x42
+beq    t5, tp, 0x2c
+lh     s2, 1961(a2)
+slti   ra, tp, 0x7f5
+sw     s8, 48(t6)
+sh     t2, 64(s9)
+sltu   a4, s1, t6
+sh     a3, 39(s9)
+sb     gp, 1(gp)
+sh     tp, 43(a1)
+xor    tp, s3, s1
+lb     t3, 1964(s4)
+lwu    s5, 118(t4)
+sll    a4, s3, a0
+sb     sp, 1719(t0)
+sub    a7, a5, t4
+sd     s7, 214(s10)
+slti   a6, x0, 0x7ea
+addi   t0, s7, 0x1ce
 
 # EXPECTED
-# x1: 0x4
-# x4: 0x70
-# x5: 0x18
-# x6: 0x7f2
-# x8: -0xd000
-# x17: 0x138
-# x19: 0x138
-# x28: 0x1
-# x30: -0x58978000
+# x2: 0x4000
+# x3: 0x1
+# x5: 0x1ce
+# x7: 0x1e
+# x16: 0x1
+# x21: 0x8ba300a9
+# x22: 0x3d13
+# x24: 0x3c01c
+# x26: 0x1

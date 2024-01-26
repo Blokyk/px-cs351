@@ -1,53 +1,56 @@
-# Seed: 701585976
+# Seed: 603619605
 
-# Generation 182
+# Generation 12
 
 # == filling regs ==
-addi     s1,   x0, 0x18
-addi     s5,   x0, 0x79d
-addi     t6,   x0, 0x7c0
-addi     a7,   x0, 0x7c2
-addi     t0,   x0, 0x54
+addi   t5, x0, 0x7c2
+addi   s11, x0, 0x7e8
+addi   s10, x0, 0x7d7
+addi   s0, x0, 0x49
+addi   t6, x0, 0x3b
 
 # == code ==
-slli     sp,   t3, 0x4
-or       s5,   s8,   a7
-slt     s10,   t5,   t6
-sh       a1, 7(s7)
-xor      t5,   s9,   t2
-sltu     t5,  s11,   a2
-sub      a3,   a1,   s4
-sltu     t5,   t1,   gp
-sb       s2, 18(a1)
-addi     t0,   gp, 0x4a
-slti     s9,   s7, 0x2ab
-bne      s5,   a7, -0x10 # (0xfffffff0)
-andi     s8,   ra, 0x23
-andi     ra,   s3, 0x7a0
-sb       tp, 2034(s3)
-andi     a3,   a7, 0xc
-slli     s8,   s7, 0x3
-sh       s8, 1826(t1)
-and      s2,   s1,   t5
-srai     a7,   t0, 0x19
-srl      s2,   ra,   t3
-ori      a3,   t6, 0x648
-sd       a3, 437(s8)
-lbu      a6, 60(t6)
-srli     s3,   a5, 0x10
-sra      t0,  s11,   s8
-ori      t4,   gp, 0x3e7
-sll      gp,   s9,   a1
-bne      a7,   sp, -0x14 # (0xffffffec)
-lui      a5, 0xfff9d
+sra    s3, s10, t1
+sll    a0, a2, s8
+sb     t0, 99(t3)
+add    t2, sp, t5
+add    a0, s3, gp
+slti   x0, a2, 0x1d8
+sub    a3, a3, s7
+andi   ra, t6, 0x7
+and    s7, t3, s0
+slti   s3, s2, 0x7ff
+blt    sp, s8, 0xc
+sll    s0, s2, s5
+slti   sp, gp, 0x7c1
+sltu   x0, s2, gp
+or     s0, s6, s3
+lwu    s11, 1972(s7)
+ori    a2, s10, 0x7ef
+and    s5, s0, tp
+xori   a5, t6, 0x34
+sb     s11, 1980(s8)
+sd     t2, 1966(s3)
+srai   t1, s3, 0x16
+sll    x0, s2, gp
+slt    a2, s7, s1
+sll    s4, a3, t4
+slli   t5, a6, 0x9
+ori    gp, s0, 0x6e4
+sub    s9, x0, s2
+lui    a6, 0xfffd6
+lui    s9, 0x63
 
 # EXPECTED
-# x3: 0x1
-# x9: 0x18
-# x13: 0x7c8
-# x15: -0x63000
-# x21: 0x7c2
-# x25: 0x1
-# x26: 0x1
-# x29: 0x3e7
-# x31: 0x7c0
+# x1: 0x3
+# x2: 0x1
+# x3: 0x6e5
+# x7: 0x47c2
+# x8: 0x1
+# x10: 0x7d7
+# x15: 0xf
+# x16: -0x2a000
+# x19: 0x1
+# x25: 0x63000
+# x26: 0x7d7
+# x31: 0x3b

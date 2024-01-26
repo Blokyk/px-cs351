@@ -1,58 +1,56 @@
-# Seed: 1466652864
+# Seed: 436113127
 
-# Generation 49
+# Generation 338
 
 # == filling regs ==
-addi     a5,   x0, 0x34
-addi     t5,   x0, 0x3f9
-addi     s9,   x0, 0x4a
-addi     a5,   x0, 0x3a
-addi     gp,   x0, 0x7c8
+addi   a4, x0, 0x7ad
+addi   s11, x0, 0x676
+addi   t3, x0, 0x7a9
+addi   a4, x0, 0x6ad
+addi   a6, x0, 0x7e7
 
 # == code ==
-slli     s3,   s4, 0xc
-slti     t1,   s7, 0x4
-sw       t2, 1976(s11)
-bge      a2,   s3, 0x4
-ld       a3, 99(t4)
-lwu      s9, 2018(s10)
-slt      x0,   ra,   s2
-sltiu    gp,   tp, 0x7d8
-slli     a7,   t1, 0x5
-bltu    s10,   tp, 0x8
-beq      a3,   s9, 0x4c
-xori     s6,  s11, 0x23
-addi     t5,   a6, 0x7e9
-lwu      s4, 19(a2)
-auipc    s1, 0xffffe
-sb       t6, 1960(ra)
-sltu     sp,   t1,   s8
-ori      ra,   s0, 0x7f3
-bltu     t4,   a6, 0x48
-srl      a0,   s2,   a6
-srli    s11,   x0, 0x1a
-bne      tp,   s9, 0x5c
-slt     s11,   gp,   s8
-xor      t0,   t5,   t1
-slti     t6,   s6, 0x33
-sh       t4, 2018(sp)
-sw       s3, 2041(a1)
-xori    s10,  s10, 0x43e
-jal      tp, -0x30 # (0xffffffd0)
-xor      t3,   ra,   t3
+sd     s4, 1952(s10)
+and    t2, a0, t0
+and    sp, t0, s10
+sw     a7, 20(s10)
+slt    ra, s11, t3
+slli   t5, s0, 0x10
+add    t0, a6, a7
+srl    s4, a1, s6
+xori   a1, s8, 0x48
+sb     a7, 11(s4)
+slti   sp, t1, 0x7d7
+ori    a1, s1, 0x7fa
+lhu    s5, 1(a7)
+or     a7, a7, gp
+sb     s4, 2025(a7)
+xori   tp, s8, 0x19
+lb     sp, 1953(gp)
+or     s8, gp, s10
+srl    t5, s0, s4
+srai   t1, t0, 0x12
+sw     t6, 1112(s3)
+add    a2, t0, s7
+sltiu  s6, sp, 0x274
+lh     s9, 41(a6)
+slt    ra, a5, x0
+sll    x0, ra, a1
+sll    t3, s11, s4
+sll    s9, a7, t1
+lbu    ra, 44(tp)
+ori    sp, s6, 0x3
 
 # EXPECTED
-# x1: 0x7f3
-# x3: 0x1
-# x4: 0x88
-# x5: 0x7e8
-# x6: 0x1
-# x9: -0x1fb4
-# x13: -0x6de19cfe5fa26cff
-# x15: 0x3a
-# x17: 0x20
-# x20: 0xca19937c
-# x22: 0x23
-# x26: 0x43e
-# x30: 0x7e9
-# x31: 0x1
+# x1: 0xda
+# x2: 0x3
+# x4: 0x19
+# x5: 0x7e7
+# x11: 0x7fa
+# x12: 0x7e7
+# x14: 0x6ad
+# x16: 0x7e7
+# x21: 0xd007
+# x22: 0x1
+# x27: 0x676
+# x28: 0x676

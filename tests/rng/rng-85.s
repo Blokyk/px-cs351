@@ -1,56 +1,56 @@
-# Seed: 2033079959
+# Seed: 1434999140
 
-# Generation 1
+# Generation 86
 
 # == filling regs ==
-addi     sp,   x0, 0xab
-addi     a5,   x0, 0x7ca
-addi     t0,   x0, 0x2af
-addi     t0,   x0, 0x7e6
-addi     t5,   x0, 0x4b
+addi   s4, x0, 0x7e8
+addi   t4, x0, 0x7bc
+addi   s2, x0, 0x14
+addi   s10, x0, 0x7c4
+addi   t2, x0, 0xea
 
 # == code ==
-or       a6,   ra,   s4
-sll      t6,   tp,   s7
-xor      a6,   t1,   a0
-blt      t2,   a2, -0x4 # (0xfffffffc)
-sb       s1, 1997(s3)
-sh       sp, 23(s2)
-sltiu    a3,   s0, 0x2c
-sh       t6, 1968(t0)
-sb       s6, 27(t4)
-addi     t5,   a4, 0x2b
-srai     gp,   a6, 0x18
-xori     s0,   a6, 0x60
-sh       s5, 1976(t4)
-sub      ra,   a0,   tp
-srai     x0,   gp, 0xc
-xor      s6,   gp,   t5
-xor      t3,   a5,  s11
-beq      t2,   t0, 0x2c
-sd       a1, 883(a1)
-xori     gp,   t5, 0x7eb
-lb       t3, 381(tp)
-ori      s5,   t2, 0x5c
-add      s4,   a7,   a4
-ori      a0,   a6, 0x23
-andi    s10,   s5, 0x7f1
-srli     s4,   t5, 0x17
-sra      t1,   t0,   s5
-slli     gp,   s7, 0x1c
-sltiu    tp,   a1, 0x57
-lui      s7, 0x54a31
+lh     a7, 1990(s1)
+xori   a3, gp, 0x21
+auipc  t2, 0xfffa0
+xor    a3, t1, t4
+sltu   t0, s7, t1
+or     s6, s9, a2
+or     s1, a2, a0
+andi   ra, a2, 0x1e
+blt    x0, ra, -0x2c # (0xffffffd4)
+sb     x0, 22(gp)
+sltu   s0, s0, a4
+andi   s1, t4, 0x680
+sltiu  s9, t3, 0x28
+slli   gp, s4, 0x1b
+bne    x0, t0, 0x34
+beq    s2, s1, 0xe08
+xor    s10, a1, tp
+sra    s1, tp, t4
+or     s9, t1, t1
+or     ra, t1, t4
+sltiu  s7, s4, 0x7c2
+lw     t0, 12(s8)
+slli   t0, s5, 0x12
+sub    t2, t4, a0
+lb     s8, 600(s0)
+slli   s7, s2, 0x1e
+bltu   s0, a0, -0x44 # (0xffffffbc)
+lui    s11, 0x31e2d
+xori   a2, s4, 0x7c0
+xori   a6, s3, 0x7ef
 
 # EXPECTED
-# x2: 0xab
-# x4: 0x1
-# x5: 0x7e6
-# x8: 0x60
-# x10: 0x23
-# x13: 0x1
-# x15: 0x7ca
-# x21: 0x5c
-# x22: 0x2b
-# x23: 0x54a31000
-# x26: 0x50
-# x30: 0x2b
+# x1: 0x7bc
+# x2: 0x4000
+# x3: 0x3f40000000
+# x7: 0x7bc
+# x12: 0x28
+# x13: 0x7bc
+# x16: 0x7ef
+# x18: 0x14
+# x20: 0x7e8
+# x23: 0x500000000
+# x27: 0x31e2d000
+# x29: 0x7bc
