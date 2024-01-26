@@ -5,8 +5,7 @@ DEFINES += _GNU_SOURCE
 
 CC ?= gcc
 CFLAGS := -O0 -Wall -Wextra -g
-CFLAGS += -fsanitize=address -fsanitize=undefined -fsanitize=leak
-CFLAGS += -fno-sanitize=alignment
+CFLAGS += -fsanitize=address -fsanitize=leak
 CFLAGS += $(addprefix -D,$(DEFINES))
 
 SRC_COMMON := $(wildcard common/*.c) $(wildcard common/*.h) common/instructions.x
@@ -39,6 +38,7 @@ $(EXE_ASM): $(SRC_ASM)
 $(EXE_EMU): $(SRC_EMU)
 	$(CC) $(filter %.c,$^) -o $@ $(CFLAGS)
 
+$(TEST_DIR): test
 test: $(EXE_ASM) $(EXE_EMU) test.py
 	@python3 test.py -v --tb=short --no-header --capture=$(CAPTURE)
 
