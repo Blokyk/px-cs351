@@ -6,6 +6,17 @@
 
 #include "decoder.h"
 
+cpu_t init_cpu(uint8_t *memory, size_t mem_size) {
+    return (cpu_t){
+        .pc = 0,
+        .regs = {
+            [2] = mem_size
+        },
+        .mem_base = memory,
+        .mem_size = mem_size
+    };
+}
+
 uint8_t* try_access_mem(cpu_t *cpu, size_t address) {
     if (address < cpu->mem_size)
         return cpu->mem_base + address;
@@ -15,7 +26,6 @@ uint8_t* try_access_mem(cpu_t *cpu, size_t address) {
         address, cpu->mem_size
     );
 
-    cpu->pc = ERROR_PC;
     return NULL;
 }
 
@@ -29,23 +39,14 @@ void env_break(cpu_t *cpu) {
     __asm__ volatile("int $0x03");
 }
 
-void step(cpu_t *cpu) {
+bool step(cpu_t *cpu) {
     uint32_t *raw_instr_ptr = (uint32_t*)try_access_mem(cpu, cpu->pc);
 
     if (raw_instr_ptr == NULL)
-        return;
+        return false;
 
     uint32_t raw_instr = *raw_instr_ptr;
     instr_t curr_instr = decode(raw_instr);
-
-    if (curr_instr.opname == op_err) {
-        // we use 0x0 as a "marker" instr, so we don't want an error in that case
-        if (raw_instr != 0x0)
-            fprintf(stderr, "\e[31mUnknown or invalid instruction: 0x%08x!\e[0m\n", raw_instr);
-
-        cpu->pc = ERROR_PC;
-        return;
-    }
 
     char *instr_str = fmt_instr(curr_instr);
     printf("%s\n", instr_str);
@@ -84,8 +85,16 @@ void step(cpu_t *cpu) {
             imm = curr_instr.as_jump.offset;
             break;
         default:
-            fprintf(stderr, "\e[1;31mwtfffff\e[0m\n");
-            exit(1);
+            // we use 0x0 as a "marker" instr, so we don't want an error in that case
+            if (raw_instr != 0x0) {
+                fprintf(
+                    stderr,
+                    "\e[31mTried to execute an unknown or invalid instruction: 0x%08x!\e[0m\n",
+                    raw_instr
+                );
+            }
+
+            return false;
     }
 
     bool pc_changed = false;
@@ -94,7 +103,7 @@ void step(cpu_t *cpu) {
     #define set_pc(val) do { cpu->pc = val; pc_changed = true; } while(0)
     #define get_pc() ((const uint64_t)(cpu->pc))
     #define regs(num) (cpu->regs[num])
-    #define mem(offset) ({ uint8_t *addr = try_access_mem(cpu, offset); if (addr == NULL) return; addr; })
+    #define mem(offset) ({ uint8_t *addr = try_access_mem(cpu, offset); if (addr == NULL) return false; addr; })
     #define branch(condition) do { if (condition) set_pc(get_pc() + (offset)); } while(0)
     #define ecall() env_call(cpu)
     #define ebreak() env_break(cpu)
@@ -121,10 +130,13 @@ void step(cpu_t *cpu) {
             abort();
     }
 
-    #undef pc
+    #undef set_pc
+    #undef get_pc
     #undef regs
     #undef mem
     #undef branch
+    #undef ecall
+    #undef ebreak
 
     #undef rd
     #undef rs1
@@ -134,6 +146,7 @@ void step(cpu_t *cpu) {
     #undef rval
     #undef offset
 
+    // reset x0
     cpu->regs[0] = 0;
 
     // most instructions don't modify PC by themselves and just
@@ -151,12 +164,14 @@ void step(cpu_t *cpu) {
                 instr_str
             );
             free(instr_str);
-            return;
+            return false;
         }
     } else {
         // we only want to advance $pc if we didn't branch or jump
         cpu->pc += 4;
     }
+
+    return true;
 }
 
 void dump_regs(cpu_t *cpu) {

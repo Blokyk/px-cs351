@@ -30,11 +30,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    // by default, memory size is 16KiB, i.e. 0x4000 bytes in hex
     size_t mem_size = 0x4000;
     uint32_t *memory = malloc(mem_size);
     bzero(memory, mem_size);
 
     size_t i = 0;
+    // read a line containing containing just a hex number
+    // from the .hex file until there's nothing left
     while (fscanf(hex_input_file, " %x \n", (uint32_t*)(memory + i)) == 1) {
         i++;
 
@@ -52,22 +55,18 @@ int main(int argc, char **argv) {
 
     cpu_t cpu = init_cpu((uint8_t*)memory, mem_size);
 
-    while (cpu.pc != ERROR_PC) {
-        step(&cpu);
+    while (step(&cpu)) {
         dump_regs(&cpu);
+
         #if DEBUG
+            // in debug, wait for a keypress on each step
             getchar();
         #endif
-
-        // for (int i = 0; i < 31; i++) {
-        //     char* fmt = i < 10 ? " x%d: %c\e[2m0x\e[0m%lx\n" : "x%d: %c\e[2m0x\e[0m%lx\n";
-        //     fprintf(stdout, fmt, i, cpu.regs[i] < 0 ? '-' : ' ', cpu.regs[i]);
-        // }
     }
 
-    for (int i = 0; i < 32; i++) {
+    // dump regs in the `.state` format
+    for (int i = 0; i < 32; i++)
         fprintf(emu_output_file, "x%d: %ld\n", i, cpu.regs[i]);
-    }
 
     free(memory);
     fclose(hex_input_file);
