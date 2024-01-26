@@ -8,7 +8,7 @@
     # Setup a0, a1, result and i
     addi t0, zero, 1   # fib(n-1)
     addi t1, zero, 0x0 # fib(n-2)
-    addi t2, zero, 0   # res # todo: 0b00000 format
+    addi t2, zero, 0b000000 # res
     addi t3, zero, 1   # i
     # FOR:
         add t2, t0, t1
